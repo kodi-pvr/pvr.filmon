@@ -22,9 +22,9 @@
 
 #include "client.h"
 
-#include "platform/util/util.h"
+#include "kodi/util/util.h"
 #include "PVRFilmonData.h"
-#include "xbmc_pvr_dll.h"
+#include "kodi/xbmc_pvr_dll.h"
 
 using namespace std;
 using namespace ADDON;
@@ -288,7 +288,7 @@ PVR_ERROR GetChannelGroupMembers(ADDON_HANDLE handle,
 
 PVR_ERROR SignalStatus(PVR_SIGNAL_STATUS &signalStatus) {
 	snprintf(signalStatus.strAdapterName, sizeof(signalStatus.strAdapterName),
-			"%s", m_data->GetBackendName());
+			m_data->GetBackendName());
 	snprintf(signalStatus.strAdapterStatus,
 			sizeof(signalStatus.strAdapterStatus), "OK");
 
@@ -302,7 +302,7 @@ int GetRecordingsAmount(bool deleted) {
 	return -1;
 }
 
-PVR_ERROR GetRecordings(ADDON_HANDLE, bool deleted) {
+PVR_ERROR GetRecordings(ADDON_HANDLE handle, bool deleted) {
 	if (m_data)
 		return m_data->GetRecordings(handle);
 

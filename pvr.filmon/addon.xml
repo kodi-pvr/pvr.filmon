@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
   id="pvr.filmon"
-  version="0.5.1"
+  version="0.5.0"
   name="PVR Filmon Client"
   provider-name="Stephen Denham">
   <requires>
@@ -10,12 +10,11 @@
   </requires>
   <extension
     point="xbmc.pvrclient"
-    library_linux="Kodi_Filmon.pvr"
-	library_osx="Kodi_Filmon.pvr"
-    library_freebsd="Kodi_Filmon.pvr"
-    library_wingl="Kodi_Filmon_win32.dll"
-    library_windx="Kodi_Filmon_win32.dll"
-    library_android="libKodi_Filmon.so" />
+    library_linux="pvr.filmon.so"
+    library_osx="pvr.filmon.dylib"
+    library_freebsd="pvr.filmon.so"
+    library_windx="pvr.filmon.dll"
+    library_android="libpvr.filmon.so" />
   <extension point="xbmc.addon.metadata">
     <summary lang="bg">Filmon ПВР клиент</summary>
     <summary lang="ca">Client PVR Filmon</summary>
@@ -80,6 +79,6 @@
     <description lang="sl">Odjemalec Filmon. Podpira TV v živo, posnetke, EPG. Potrebna je naročnina na Filmon. Preden omogočite: (a) v Filmonu nastavite programe kot priljubljene, da se prikažejo v Kodiju (b) vnesite vaše uporabniško ime in geslo v nastavitvah tega dodatka. Opomba: posnetki se lahko prikažejo šele po nekaj minutah, ko se snemanje zaključi.</description>
     <description lang="sv">Filmon frontend. Stöder live-TV, inspelningar, EPG. Kräver ett Filmon-abonnemang. Innan du aktiverar: (a) Ställ in favoritkanaler i Filmon för att kunna se dem i Kodi. (b) Ange ditt användarnamn och lösenord i inställningar för detta tillägg. Observera: Det kan ta flera minuter innan inspelningar visas efter att timern är klar.</description>
     <description lang="zh">Filmon 前端。支持直播电视、录像、电子节目单。需要有 Filmon 订阅。激活前：(a) 在 Filmon 中设置喜爱的频道以便在 Kodi 中看到 (b) 在本插件的设置中输入你的用户名和密码。注意：录像要在完成后几分钟后才能看到。</description>
-    <platform>@OS@</platform>
+    <platform>all</platform>
   </extension>
 </addon>
