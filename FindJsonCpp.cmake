@@ -4,9 +4,9 @@ if(PKG_CONFIG_FOUND)
 endif()
 
 if(NOT JSONCPP_FOUND)
-  find_path(JSONCPP_INCLUDE_DIR json/json.h
+  find_path(JSONCPP_INCLUDE_DIRS json/json.h
             PATH_SUFFIXES jsoncpp)
-  find_library(JSONCPP_LIBRARY jsoncpp)
+  find_library(JSONCPP_LIBRARIES jsoncpp)
 endif()
 
 include(FindPackageHandleStandardArgs)
