@@ -25,6 +25,7 @@
 #include "kodi/util/util.h"
 #include "PVRFilmonData.h"
 #include "kodi/xbmc_pvr_dll.h"
+#include "kodi/libKODI_guilib.h"
 
 using namespace std;
 using namespace ADDON;
@@ -179,20 +180,18 @@ const char* GetMininumPVRAPIVersion(void) {
 }
 
 const char* GetGUIAPIVersion(void) {
-	static const char *strGuiApiVersion = XBMC_GUI_API_VERSION;
-	return strGuiApiVersion;
+	return KODI_GUILIB_API_VERSION;
 }
 
 const char* GetMininumGUIAPIVersion(void) {
-	static const char *strMinGuiApiVersion = XBMC_GUI_MIN_API_VERSION;
-	return strMinGuiApiVersion;
+	return KODI_GUILIB_MIN_API_VERSION;
 }
 
 PVR_ERROR GetAddonCapabilities(PVR_ADDON_CAPABILITIES* pCapabilities) {
 	pCapabilities->bSupportsTV = true;
 	pCapabilities->bSupportsEPG = true;
 	pCapabilities->bSupportsRecordings = true;
-  pCapabilities->bSupportsRecordingsUndelete = false;
+	pCapabilities->bSupportsRecordingsUndelete = false;
 	pCapabilities->bSupportsTimers = true;
 	pCapabilities->bSupportsChannelGroups = true;
 	pCapabilities->bSupportsRadio = false;
