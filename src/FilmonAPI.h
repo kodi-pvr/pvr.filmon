@@ -18,6 +18,8 @@
  *
  */
 
+#include <string>
+#include <vector>
 
 /* These IDs come from the DVB-SI EIT table "content descriptor"
  * Also known under the name "E-book genre assignments"

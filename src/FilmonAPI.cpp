@@ -22,12 +22,13 @@
 
 #include <algorithm>
 #include <string>
+#include <vector>
 #include <cstdio>
 #include <sstream>
 
 #include <json/json.h>
 
-#include <unistd.h>
+#include "kodi/util/timeutils.h" // for usleep
 
 #include "FilmonAPI.h"
 #include "client.h"
