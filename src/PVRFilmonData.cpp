@@ -172,6 +172,7 @@ PVR_ERROR PVRFilmonData::GetChannelGroups(ADDON_HANDLE handle, bool bRadio) {
 			PVR_CHANNEL_GROUP xbmcGroup;
 			memset(&xbmcGroup, 0, sizeof(PVR_CHANNEL_GROUP));
 			xbmcGroup.bIsRadio = bRadio;
+			xbmcGroup.iPosition = 0; // groups default order, unused
 			strncpy(xbmcGroup.strGroupName, group.strGroupName.c_str(),
 					sizeof(xbmcGroup.strGroupName) - 1);
 			PVR->TransferChannelGroup(handle, &xbmcGroup);
@@ -247,6 +248,12 @@ PVR_ERROR PVRFilmonData::GetEPGForChannel(ADDON_HANDLE handle,
 				tag.endTime = epgEntry.endTime;
 				tag.strPlotOutline = epgEntry.strPlotOutline.c_str();
 				tag.strPlot = epgEntry.strPlot.c_str();
+				tag.strOriginalTitle = NULL; // unused
+				tag.strCast = NULL; // unused
+				tag.strDirector = NULL; // unused
+				tag.strWriter = NULL; // unused
+				tag.iYear = 0; // unused
+				tag.strIMDBNumber = NULL; // unused
 				tag.strIconPath = epgEntry.strIconPath.c_str();
 				tag.iGenreType = epgEntry.iGenreType;
 				tag.iGenreSubType = epgEntry.iGenreSubType;
