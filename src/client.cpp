@@ -22,7 +22,7 @@
 
 #include "client.h"
 
-#include "kodi/util/util.h"
+#include "platform/util/util.h"
 #include "PVRFilmonData.h"
 #include "kodi/xbmc_pvr_dll.h"
 #include "kodi/libKODI_guilib.h"
