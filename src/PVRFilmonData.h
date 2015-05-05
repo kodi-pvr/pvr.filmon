@@ -22,8 +22,8 @@
  */
 
 #include <vector>
-#include "kodi/util/StdString.h"
-#include "kodi/threads/mutex.h"
+#include "platform/util/StdString.h"
+#include "platform/threads/mutex.h"
 #include "client.h"
 #include "kodi/libXBMC_pvr.h"
 #include "FilmonAPI.h"

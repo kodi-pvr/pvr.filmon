@@ -28,7 +28,7 @@
 
 #include <json/json.h>
 
-#include "kodi/util/timeutils.h" // for usleep
+#include "platform/util/timeutils.h" // for usleep
 
 #include "FilmonAPI.h"
 #include "client.h"
