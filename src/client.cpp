@@ -287,7 +287,7 @@ PVR_ERROR GetChannelGroupMembers(ADDON_HANDLE handle,
 
 PVR_ERROR SignalStatus(PVR_SIGNAL_STATUS &signalStatus) {
 	snprintf(signalStatus.strAdapterName, sizeof(signalStatus.strAdapterName),
-			m_data->GetBackendName());
+			"%s", m_data->GetBackendName());
 	snprintf(signalStatus.strAdapterStatus,
 			sizeof(signalStatus.strAdapterStatus), "OK");
 
