@@ -24,8 +24,8 @@
 
 #include "platform/util/util.h"
 #include "PVRFilmonData.h"
-#include "kodi/xbmc_pvr_dll.h"
-#include "kodi/libKODI_guilib.h"
+#include "xbmc_pvr_dll.h"
+#include "libKODI_guilib.h"
 
 using namespace std;
 using namespace ADDON;

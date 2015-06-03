@@ -25,7 +25,7 @@
 #include "platform/util/StdString.h"
 #include "platform/threads/mutex.h"
 #include "client.h"
-#include "kodi/libXBMC_pvr.h"
+#include "libXBMC_pvr.h"
 #include "FilmonAPI.h"
 
 #define FILMON_CACHE_TIME 10800 // 3 hours
