@@ -353,6 +353,10 @@ PVR_ERROR PVRFilmonData::GetTimers(ADDON_HANDLE handle) {
 			PVRFilmonTimer &timer = *it;
 			if ((PVR_TIMER_STATE) timer.state < PVR_TIMER_STATE_COMPLETED) {
 				PVR_TIMER xbmcTimer;
+				memset(&xbmcTimer, 0, sizeof(PVR_TIMER));
+
+				/* TODO: Implement own timer types to get support for the timer features introduced with PVR API 1.9.7 */
+				xbmcTimer.iTimerType = PVR_TIMER_TYPE_NONE;
 
 				xbmcTimer.iClientIndex = timer.iClientIndex;
 				xbmcTimer.iClientChannelUid = timer.iClientChannelUid;
@@ -363,7 +367,6 @@ PVR_ERROR PVRFilmonData::GetTimers(ADDON_HANDLE handle) {
 				xbmcTimer.startTime = timer.startTime;
 				xbmcTimer.endTime = timer.endTime;
 				xbmcTimer.state = (PVR_TIMER_STATE) timer.state;
-				xbmcTimer.bIsRepeating = timer.bIsRepeating;
 				xbmcTimer.firstDay = timer.firstDay;
 				xbmcTimer.iWeekdays = timer.iWeekdays;
 				xbmcTimer.iEpgUid = timer.iEpgUid;
