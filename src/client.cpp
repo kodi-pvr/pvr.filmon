@@ -432,6 +432,10 @@ long long PositionLiveStream(void) {
 long long LengthLiveStream(void) {
 	return -1;
 }
+bool IsTimeshifting(void)
+{
+        return false;
+}
 PVR_ERROR RenameRecording(const PVR_RECORDING &recording) {
 	return PVR_ERROR_NOT_IMPLEMENTED;
 }
