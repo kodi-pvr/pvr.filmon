@@ -162,7 +162,7 @@ ADDON_STATUS ADDON_SetSetting(const char *settingName,
 	} else if (str == "preferhd") {
 		bool tmp_boolPreferHd = g_boolPreferHd;
 		g_boolPreferHd = (const char*)settingValue;
-		if (tmp_boolPreferHd != g_boolPreferHd) {
+		if (tmp_sPassword != g_strPassword) {
 			XBMC->Log(LOG_INFO, "%s - Changed Setting 'preferhd'",
 					__FUNCTION__);
 			return ADDON_STATUS_NEED_RESTART;
