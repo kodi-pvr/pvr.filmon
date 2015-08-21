@@ -48,6 +48,7 @@ std::string g_strUserPath = "";
 std::string g_strClientPath = "";
 std::string g_strUsername = "";
 std::string g_strPassword = "";
+bool g_boolPreferHd = false;
 
 CHelper_libXBMC_addon *XBMC = NULL;
 CHelper_libXBMC_pvr *PVR = NULL;
@@ -69,6 +70,10 @@ void ADDON_ReadSettings(void) {
 		g_strPassword = buffer;
 	else
 		g_strPassword = "";
+
+	/* read setting "preferhd" from settings.xml */
+	if (!XBMC->GetSetting("preferhd", &g_boolPreferHd))
+		g_boolPreferHd = false;
 
 	XBMC->Log(LOG_DEBUG, "%s - read PVR Filmon settings", __FUNCTION__);
 }
@@ -148,6 +153,14 @@ ADDON_STATUS ADDON_SetSetting(const char *settingName,
 		g_strPassword = (const char*) settingValue;
 		if (tmp_sPassword != g_strPassword) {
 			XBMC->Log(LOG_INFO, "%s - Changed Setting 'password'",
+					__FUNCTION__);
+			return ADDON_STATUS_NEED_RESTART;
+		}
+	} else if (str == "preferhd") {
+		bool tmp_boolPreferHd = g_boolPreferHd;
+		g_boolPreferHd = (const char*)settingValue;
+		if (tmp_boolPreferHd != g_boolPreferHd) {
+			XBMC->Log(LOG_INFO, "%s - Changed Setting 'preferhd'",
 					__FUNCTION__);
 			return ADDON_STATUS_NEED_RESTART;
 		}

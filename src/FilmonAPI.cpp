@@ -345,11 +345,23 @@ bool filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL *channel) {
 		unsigned int stream = 0;
 		for (stream = 0; stream < streamCount; stream++) {
 			std::string quality = streams[stream]["quality"].asString();
-			if (quality.compare(std::string("high")) == 0 || quality.compare(std::string("480p")) == 0 || quality.compare(std::string("HD")) == 0) {
-				XBMC->Log(LOG_DEBUG, "high quality stream found: %s", quality.c_str());
-				break;
-			} else {
-				XBMC->Log(LOG_DEBUG, "low quality stream found: %s", quality.c_str());
+			if (g_boolPreferHd == true){
+				XBMC->Log(LOG_NOTICE, "Prefer high quality stream");
+				if (quality.compare(std::string("high")) == 0 || quality.compare(std::string("480p")) == 0 || quality.compare(std::string("HD")) == 0) {
+					XBMC->Log(LOG_DEBUG, "high quality stream found: %s", quality.c_str());
+					break;
+				} else {
+					XBMC->Log(LOG_DEBUG, "low quality stream found: %s", quality.c_str());
+				}
+			}
+			else{
+				XBMC->Log(LOG_NOTICE, "Prefer low quality stream");
+				if (quality.compare(std::string("high")) == 0 || quality.compare(std::string("480p")) == 0 || quality.compare(std::string("HD")) == 0) {
+					XBMC->Log(LOG_DEBUG, "high quality stream found: %s", quality.c_str());
+				} else {
+					XBMC->Log(LOG_DEBUG, "low quality stream found: %s", quality.c_str());
+					break;
+				}
 			}
 		}
 		std::string chTitle = title.asString();
