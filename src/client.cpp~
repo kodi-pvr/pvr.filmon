@@ -48,7 +48,6 @@ std::string g_strUserPath = "";
 std::string g_strClientPath = "";
 std::string g_strUsername = "";
 std::string g_strPassword = "";
-bool g_boolPreferHd = false;
 
 CHelper_libXBMC_addon *XBMC = NULL;
 CHelper_libXBMC_pvr *PVR = NULL;
