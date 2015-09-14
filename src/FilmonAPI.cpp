@@ -118,7 +118,7 @@ void setTimerDefaults(FILMON_TIMER *t) {
 	t->bIsRepeating = false;
 	t->firstDay = 0;
 	t->iWeekdays = 0;
-	t->iEpgUid = 0;
+	t->iEpgUid = PVR_TIMER_NO_EPG_UID;
 	t->iGenreType = 0;
 	t->iGenreSubType = 0;
 	t->iMarginStart = 0;

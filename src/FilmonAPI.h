@@ -71,7 +71,7 @@ typedef struct {
 	bool bIsRepeating;
 	time_t firstDay;
 	int iWeekdays;
-	int iEpgUid;
+	unsigned int iEpgUid;
 	int iGenreType;
 	int iGenreSubType;
 	int iMarginStart;
