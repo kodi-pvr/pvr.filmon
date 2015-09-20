@@ -266,6 +266,7 @@ PVR_ERROR PVRFilmonData::GetEPGForChannel(ADDON_HANDLE handle,
 				tag.iEpisodeNumber = 0;
 				tag.iEpisodePartNumber = 0;
 				tag.strEpisodeName = "";
+				tag.iFlags = EPG_TAG_FLAG_UNDEFINED;
 				PVR->TransferEpgEntry(handle, &tag);
 			}
 		}
