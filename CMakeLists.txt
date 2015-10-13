@@ -24,3 +24,5 @@ set(FILMON_SOURCES src/client.cpp
                    src/md5.cpp)
 
 build_addon(pvr.filmon FILMON DEPLIBS)
+
+include(CPack)
