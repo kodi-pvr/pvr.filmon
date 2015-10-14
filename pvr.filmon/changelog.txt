@@ -1,3 +1,6 @@
+0.5.10
+Added option to prefer SD streams
+
 0.5.9
 Debian packaging: fix library install path
 Miscellaneous backend fixes
