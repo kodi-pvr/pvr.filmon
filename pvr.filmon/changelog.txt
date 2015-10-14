@@ -1,3 +1,6 @@
+0.7.0
+added option to prefer SD streams
+
 0.6.6
 Updated to PVR API v4.1.0
 
