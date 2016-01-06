@@ -43,7 +43,7 @@ PVRFilmonData::~PVRFilmonData(void) {
 }
 
 bool PVRFilmonData::Load(std::string user, std::string pwd) {
-	PLATFORM::CLockObject lock(m_mutex);
+	P8PLATFORM::CLockObject lock(m_mutex);
 	username = user;
 	password = pwd;
 	bool res = filmonAPICreate();
@@ -74,7 +74,7 @@ const char* PVRFilmonData:: GetConnection(void) {
 }
 
 void PVRFilmonData::GetDriveSpace(long long *iTotal, long long *iUsed) {
-	PLATFORM::CLockObject lock(m_mutex);
+	P8PLATFORM::CLockObject lock(m_mutex);
 	XBMC->Log(LOG_DEBUG, "getting user storage from API");
 	filmonAPIgetUserStorage(iTotal, iUsed);
 	*iTotal = *iTotal/10;
@@ -89,7 +89,7 @@ int PVRFilmonData::GetChannelsAmount(void) {
 }
 
 PVR_ERROR PVRFilmonData::GetChannels(ADDON_HANDLE handle, bool bRadio) {
-	PLATFORM::CLockObject lock(m_mutex);
+	P8PLATFORM::CLockObject lock(m_mutex);
 	bool res = false;
 	bool expired = false;
 	if (time(0) - lastTimeChannels > FILMON_CACHE_TIME) {
@@ -159,7 +159,7 @@ int PVRFilmonData::GetChannelGroupsAmount(void) {
 }
 
 PVR_ERROR PVRFilmonData::GetChannelGroups(ADDON_HANDLE handle, bool bRadio) {
-	PLATFORM::CLockObject lock(m_mutex);
+	P8PLATFORM::CLockObject lock(m_mutex);
 	if (bRadio == false) {
 		if (time(0) - lastTimeGroups > FILMON_CACHE_TIME) {
 			XBMC->Log(LOG_DEBUG,
@@ -184,7 +184,7 @@ PVR_ERROR PVRFilmonData::GetChannelGroups(ADDON_HANDLE handle, bool bRadio) {
 
 PVR_ERROR PVRFilmonData::GetChannelGroupMembers(ADDON_HANDLE handle,
 		const PVR_CHANNEL_GROUP &group) {
-	PLATFORM::CLockObject lock(m_mutex);
+	P8PLATFORM::CLockObject lock(m_mutex);
 	if (time(0) - lastTimeGroups > FILMON_CACHE_TIME) {
 		XBMC->Log(LOG_DEBUG,
 				"cache expired, getting channel groups members from API");
@@ -230,7 +230,7 @@ int PVRFilmonData::UpdateChannel(unsigned int channelId) {
 // Called periodically to refresh EPG
 PVR_ERROR PVRFilmonData::GetEPGForChannel(ADDON_HANDLE handle,
 		const PVR_CHANNEL &channel, time_t iStart, time_t iEnd) {
-	PLATFORM::CLockObject lock(m_mutex);
+	P8PLATFORM::CLockObject lock(m_mutex);
 	XBMC->Log(LOG_DEBUG, "getting EPG for channel");
 	unsigned int broadcastIdCount = lastTimeChannels;
 	int chIndex = PVRFilmonData::UpdateChannel(channel.iUniqueId);
@@ -289,7 +289,7 @@ int PVRFilmonData::GetRecordingsAmount(void) {
 }
 
 PVR_ERROR PVRFilmonData::GetRecordings(ADDON_HANDLE handle) {
-	PLATFORM::CLockObject lock(m_mutex);
+	P8PLATFORM::CLockObject lock(m_mutex);
 	XBMC->Log(LOG_DEBUG, "getting recordings from API");
 	m_recordings = filmonAPIgetRecordings();
 	for (std::vector<PVRFilmonRecording>::iterator it = m_recordings.begin();
@@ -328,7 +328,7 @@ PVR_ERROR PVRFilmonData::GetRecordings(ADDON_HANDLE handle) {
 }
 
 PVR_ERROR PVRFilmonData::DeleteRecording(const PVR_RECORDING &recording) {
-	PLATFORM::CLockObject lock(m_mutex);
+	P8PLATFORM::CLockObject lock(m_mutex);
 	XBMC->Log(LOG_DEBUG, "deleting recording %s", recording.strRecordingId);
 	if (filmonAPIdeleteRecording((unsigned int)atoi(recording.strRecordingId))) {
 		PVR->TriggerRecordingUpdate();
@@ -345,7 +345,7 @@ int PVRFilmonData::GetTimersAmount(void) {
 
 // Gets called every 5 minutes, same as Filmon session lifetime
 PVR_ERROR PVRFilmonData::GetTimers(ADDON_HANDLE handle) {
-	PLATFORM::CLockObject lock(m_mutex);
+	P8PLATFORM::CLockObject lock(m_mutex);
 	XBMC->Log(LOG_DEBUG, "getting timers from API");
 	if (filmonAPIkeepAlive()) { // Keeps session alive
 		m_timers = filmonAPIgetTimers();
@@ -387,7 +387,7 @@ PVR_ERROR PVRFilmonData::GetTimers(ADDON_HANDLE handle) {
 }
 
 PVR_ERROR PVRFilmonData::AddTimer(const PVR_TIMER &timer) {
-	PLATFORM::CLockObject lock(m_mutex);
+	P8PLATFORM::CLockObject lock(m_mutex);
 	XBMC->Log(LOG_DEBUG, "adding timer");
 	if (filmonAPIaddTimer(timer.iClientChannelUid, timer.startTime,
 			timer.endTime)) {
@@ -400,7 +400,7 @@ PVR_ERROR PVRFilmonData::AddTimer(const PVR_TIMER &timer) {
 
 PVR_ERROR PVRFilmonData::DeleteTimer(const PVR_TIMER &timer,
 		bool bForceDelete) {
-	PLATFORM::CLockObject lock(m_mutex);
+	P8PLATFORM::CLockObject lock(m_mutex);
 	XBMC->Log(LOG_DEBUG, "deleting timer %d", timer.iClientIndex);
 	if (filmonAPIdeleteTimer(timer.iClientIndex, bForceDelete)) {
 		PVR->TriggerTimerUpdate();
@@ -411,7 +411,7 @@ PVR_ERROR PVRFilmonData::DeleteTimer(const PVR_TIMER &timer,
 }
 
 PVR_ERROR PVRFilmonData::UpdateTimer(const PVR_TIMER& timer) {
-	PLATFORM::CLockObject lock(m_mutex);
+	P8PLATFORM::CLockObject lock(m_mutex);
 	XBMC->Log(LOG_DEBUG, "updating timer");
 	if (filmonAPIdeleteTimer(timer.iClientIndex, true)
 			&& filmonAPIaddTimer(timer.iClientChannelUid, timer.startTime,

@@ -22,8 +22,8 @@
  */
 
 #include <vector>
-#include "platform/util/StdString.h"
-#include "platform/threads/mutex.h"
+#include "p8-platform/util/StdString.h"
+#include "p8-platform/threads/mutex.h"
 #include "client.h"
 #include "kodi/libXBMC_pvr.h"
 #include "FilmonAPI.h"
@@ -71,7 +71,7 @@ public:
 
 private:
 	int UpdateChannel(unsigned int channelId);
-	PLATFORM::CMutex m_mutex;
+	P8PLATFORM::CMutex m_mutex;
 	std::vector<PVRFilmonChannelGroup> m_groups;
 	std::vector<PVRFilmonChannel> m_channels;
 	std::vector<PVRFilmonRecording> m_recordings;
