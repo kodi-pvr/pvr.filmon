@@ -448,6 +448,10 @@ bool IsTimeshifting(void)
 {
         return false;
 }
+bool IsRealTimeStream(void)
+{
+        return true;
+}
 PVR_ERROR RenameRecording(const PVR_RECORDING &recording) {
 	return PVR_ERROR_NOT_IMPLEMENTED;
 }
