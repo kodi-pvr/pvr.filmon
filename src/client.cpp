@@ -389,9 +389,6 @@ PVR_ERROR MoveChannel(const PVR_CHANNEL &channel) {
 bool SwitchChannel(const PVR_CHANNEL& channel) {
 	return false;
 }
-int GetCurrentClientChannel(void) {
-	return 0;
-}
 PVR_ERROR OpenDialogChannelSettings(const PVR_CHANNEL &channel) {
 	return PVR_ERROR_NOT_IMPLEMENTED;
 }
