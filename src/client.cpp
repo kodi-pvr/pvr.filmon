@@ -503,4 +503,9 @@ PVR_ERROR DeleteAllRecordingsFromTrash()
 {
   return PVR_ERROR_NOT_IMPLEMENTED;
 }
+PVR_ERROR SetEPGTimeFrame(int)
+{
+  return PVR_ERROR_NOT_IMPLEMENTED;
+}
+
 }
