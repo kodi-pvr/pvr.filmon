@@ -1,0 +1,23 @@
+# build artifacts
+build/
+debian/changelog
+debian/files
+debian/kodi-pvr-filmon-dbg.debhelper.log
+debian/kodi-pvr-filmon-dbg.substvars
+debian/kodi-pvr-filmon-dbg/
+debian/kodi-pvr-filmon.debhelper.log
+debian/kodi-pvr-filmon.postinst.debhelper
+debian/kodi-pvr-filmon.postrm.debhelper
+debian/kodi-pvr-filmon.substvars
+debian/kodi-pvr-filmon/
+debian/tmp/
+obj-x86_64-linux-gnu/
+pvr.filmon/addon.xml
+
+# clion
+.idea/
+
+# Eclipse/CDT
+.cproject
+.project
+.settings/
