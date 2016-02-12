@@ -495,6 +495,9 @@ time_t GetBufferTimeStart() {
 time_t GetBufferTimeEnd() {
 	return 0;
 }
+bool IsRealTimeStream() {
+  return true; }
+}
 PVR_ERROR UndeleteRecording(const PVR_RECORDING& recording)
 {
   return PVR_ERROR_NOT_IMPLEMENTED;
