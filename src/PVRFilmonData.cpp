@@ -322,6 +322,9 @@ PVR_ERROR PVRFilmonData::GetRecordings(ADDON_HANDLE handle) {
 				recording.strThumbnailPath.c_str(),
 				sizeof(xbmcRecording.strThumbnailPath) - 1);
 
+		/* TODO: PVR API 5.0.0: Implement this */
+		xbmcRecording.iChannelUid = PVR_CHANNEL_INVALID_UID;
+
 		PVR->TransferRecordingEntry(handle, &xbmcRecording);
 	}
 	return PVR_ERROR_NO_ERROR;
