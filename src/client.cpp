@@ -496,7 +496,7 @@ time_t GetBufferTimeEnd() {
 	return 0;
 }
 bool IsRealTimeStream() {
-  return true; }
+  return true;
 }
 PVR_ERROR UndeleteRecording(const PVR_RECORDING& recording)
 {
