@@ -550,6 +550,10 @@ bool filmonAPIgetRecordingsTimers(bool completed) {
 				recording.iDuration = recDuration;
 				recording.strIconPath =	recordingsTimers[recordingId]["images"]["channel_logo"].asString();
 				recording.strThumbnailPath = recordingsTimers[recordingId]["images"]["poster"].asString();
+
+				/* TODO: PVR API 5.0.0: Implement this */
+				recording.iChannelUid = PVR_CHANNEL_INVALID_UID;
+
 				recordings.push_back(recording);
 				XBMC->Log(LOG_DEBUG, "found completed recording %s", recording.strTitle.c_str());
 			} else if (status.asString().compare(std::string(TIMER_STATUS))

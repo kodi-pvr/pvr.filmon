@@ -25,7 +25,6 @@
 #include "p8-platform/util/util.h"
 #include "PVRFilmonData.h"
 #include "kodi/xbmc_pvr_dll.h"
-#include "kodi/libKODI_guilib.h"
 
 using namespace std;
 using namespace ADDON;
@@ -193,11 +192,11 @@ const char* GetMininumPVRAPIVersion(void) {
 }
 
 const char* GetGUIAPIVersion(void) {
-	return KODI_GUILIB_API_VERSION;
+	return ""; // GUI API not used
 }
 
 const char* GetMininumGUIAPIVersion(void) {
-	return KODI_GUILIB_MIN_API_VERSION;
+	return ""; // GUI API not used
 }
 
 PVR_ERROR GetAddonCapabilities(PVR_ADDON_CAPABILITIES* pCapabilities) {
@@ -390,9 +389,6 @@ PVR_ERROR MoveChannel(const PVR_CHANNEL &channel) {
 bool SwitchChannel(const PVR_CHANNEL& channel) {
 	return false;
 }
-int GetCurrentClientChannel(void) {
-	return 0;
-}
 PVR_ERROR OpenDialogChannelSettings(const PVR_CHANNEL &channel) {
 	return PVR_ERROR_NOT_IMPLEMENTED;
 }
@@ -499,6 +495,9 @@ time_t GetBufferTimeStart() {
 time_t GetBufferTimeEnd() {
 	return 0;
 }
+bool IsRealTimeStream() {
+  return true; }
+}
 PVR_ERROR UndeleteRecording(const PVR_RECORDING& recording)
 {
   return PVR_ERROR_NOT_IMPLEMENTED;
@@ -507,4 +506,9 @@ PVR_ERROR DeleteAllRecordingsFromTrash()
 {
   return PVR_ERROR_NOT_IMPLEMENTED;
 }
+PVR_ERROR SetEPGTimeFrame(int)
+{
+  return PVR_ERROR_NOT_IMPLEMENTED;
+}
+
 }
