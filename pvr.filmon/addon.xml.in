@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
   id="pvr.filmon"
-  version="1.1.0"
+  version="1.2.0"
   name="PVR Filmon Client"
   provider-name="Stephen Denham">
   <requires>
     <c-pluff version="0.1"/>
-    <import addon="xbmc.pvr" version="5.0.0"/>
+    <import addon="xbmc.pvr" version="5.1.0"/>
   </requires>
   <extension
     point="xbmc.pvrclient"
