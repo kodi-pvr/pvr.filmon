@@ -2,7 +2,7 @@
 <addon
   id="pvr.filmon"
   version="1.2.1"
-  name="PVR Filmon Client"
+  name="FilmOn PVR Client Addon"
   provider-name="Stephen Denham">
   <requires>
     <c-pluff version="0.1"/>
