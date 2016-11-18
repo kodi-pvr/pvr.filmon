@@ -214,7 +214,7 @@ bool filmonAPIkeepAlive(void) {
 
 // Session
 bool filmonAPIgetSessionKey(void) {
-	bool res = filmonRequest("tv/api/init?channelProvider=ipad&app_id=IGlsbSBuVCJ7UDwZBl0eBR4JGgEBERhRXlBcWl0CEw==");
+	bool res = filmonRequest("tv/api/init?channelProvider=ipad&app_id=IGlsbSBuVCJ7UDwZBl0eBR4JGgEBERhRXlBcWl0CEw==|User-Agent=Mozilla%2F5.0%20(Windows%3B%20U%3B%20Windows%20NT%205.1%3B%20en-GB%3B%20rv%3A1.9.0.3)%20Gecko%2F2008092417%20Firefox%2F3.0.3");
 	if (res == true) {
 		Json::Value root;
 		Json::Reader reader;
