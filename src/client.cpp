@@ -484,7 +484,7 @@ bool CanPauseStream(void) {
 bool CanSeekStream(void) {
 	return true;
 }
-bool SeekTime(int time, bool backwards, double *startpts) {
+bool SeekTime(double time, bool backwards, double *startpts) {
 	if (backwards) {
 		return true;
 	} else {
