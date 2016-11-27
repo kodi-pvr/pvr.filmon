@@ -403,6 +403,8 @@ bool filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL *channel) {
 		unsigned int entries = 0;
 		unsigned int programmeCount = tvguide.size();
 		std::string offAir = std::string("OFF_AIR");
+			XBMC->Log(LOG_DEBUG, "number of EPG entries pc %u", programmeCount);
+			XBMC->Log(LOG_DEBUG, "number of EPG entries tvg %u", tvguide.size());		
 		for (unsigned int p = 0; p < programmeCount; p++) {
 			Json::Value broadcastId = tvguide[p]["programme"];
 			std::string programmeId = broadcastId.asString();
