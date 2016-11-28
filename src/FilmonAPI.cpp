@@ -403,9 +403,8 @@ bool filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL *channel) {
 		unsigned int entries = 0;
 		unsigned int programmeCount = tvguide.size();
 		std::string offAir = std::string("OFF_AIR");
-			XBMC->Log(LOG_DEBUG, "number of EPG entries pc %u", programmeCount);
-			XBMC->Log(LOG_DEBUG, "number of EPG entries tvg %u", tvguide.size());		
-		for (unsigned int p = 0; p < programmeCount; p++) {
+		for (unsigned int p = 0; tvguide[p]["programme_name"] > 0; p++) {
+			XBMC->Log(LOG_NOTICE, "programe1 %u", tvguide[1]["programme_name"]);
 			Json::Value broadcastId = tvguide[p]["programme"];
 			std::string programmeId = broadcastId.asString();
 			Json::Value startTime = tvguide[p]["startdatetime"];
@@ -446,7 +445,7 @@ bool filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL *channel) {
 			(channel->epg).push_back(epgEntry);
 			entries++;
 		}
-		XBMC->Log(LOG_DEBUG, "number of EPG entries is %u", entries);
+		XBMC->Log(LOG_NOTICE, "number of EPG entries is %u", entries);
 		clearResponse();
 	}
 	return res;
