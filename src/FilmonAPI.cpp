@@ -346,7 +346,7 @@ bool filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL *channel) {
 		for (stream = 0; stream < streamCount; stream++) {
 			std::string quality = streams[stream]["quality"].asString();
 			if (g_boolPreferHd == true){
-				XBMC->Log(LOG_NOTICE, "Prefer high quality stream");
+				XBMC->Log(LOG_DEBUG, "Prefer high quality stream");
 				if (quality.compare(std::string("high")) == 0 || quality.compare(std::string("480p")) == 0 || quality.compare(std::string("HD")) == 0) {
 					XBMC->Log(LOG_DEBUG, "high quality stream found: %s", quality.c_str());
 					break;
@@ -355,7 +355,7 @@ bool filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL *channel) {
 				}
 			}
 			else{
-				XBMC->Log(LOG_NOTICE, "Prefer low quality stream");
+				XBMC->Log(LOG_DEBUG, "Prefer low quality stream");
 				if (quality.compare(std::string("high")) == 0 || quality.compare(std::string("480p")) == 0 || quality.compare(std::string("HD")) == 0) {
 					XBMC->Log(LOG_DEBUG, "high quality stream found: %s", quality.c_str());
 				} else {
@@ -397,55 +397,62 @@ bool filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL *channel) {
 		channel->strIconPath = iconPath;
 		channel->strStreamURL = streamURL;
 		(channel->epg).clear();
+		clearResponse();
 
-		// Get EPG
-		XBMC->Log(LOG_DEBUG, "building EPG");
-		unsigned int entries = 0;
-		unsigned int programmeCount = tvguide.size();
-		std::string offAir = std::string("OFF_AIR");
-		for (unsigned int p = 0; p < programmeCount; p++) {
-			Json::Value broadcastId = tvguide[p]["programme"];
-			std::string programmeId = broadcastId.asString();
-			Json::Value startTime = tvguide[p]["startdatetime"];
-			Json::Value endTime = tvguide[p]["enddatetime"];
-			Json::Value programmeName = tvguide[p]["programme_name"];
-			Json::Value plot = tvguide[p]["programme_description"];
-			Json::Value images = tvguide[p]["images"];
-			FILMON_EPG_ENTRY epgEntry;
-			if (programmeId.compare(offAir) != 0) {
-				epgEntry.strTitle = programmeName.asString();
-				epgEntry.iBroadcastId = stringToInt(programmeId);
-				if (plot.isNull() != true) {
-					epgEntry.strPlot = plot.asString();
-				}
-				if (!images.empty()) {
-					Json::Value programmeIcon = images[(unsigned int)0]["url"];
-					epgEntry.strIconPath = programmeIcon.asString();
+		bool res = filmonRequest("tv/api/tvguide/" + intToString(channelId));
+		if (res == true) {
+			// Get EPG
+			XBMC->Log(LOG_DEBUG, "building EPG");
+			Json::Value root;
+			Json::Reader reader;
+			reader.parse(response, root);
+			unsigned int entries = 0;
+			unsigned int programmeCount = root.size();
+			std::string offAir = std::string("OFF_AIR");
+			for (unsigned int p = 0; p < programmeCount; p++) {
+				Json::Value broadcastId = root[p]["programme"];
+				std::string programmeId = broadcastId.asString();
+				Json::Value startTime = root[p]["startdatetime"];
+				Json::Value endTime = root[p]["enddatetime"];
+				Json::Value programmeName = root[p]["programme_name"];
+				Json::Value plot = root[p]["programme_description"];
+				Json::Value images = root[p]["images"];
+				FILMON_EPG_ENTRY epgEntry;
+				if (programmeId.compare(offAir) != 0) {
+					epgEntry.strTitle = programmeName.asString();
+					epgEntry.iBroadcastId = stringToInt(programmeId);
+					if (plot.isNull() != true) {
+						epgEntry.strPlot = plot.asString();
+					}
+					if (!images.empty()) {
+						Json::Value programmeIcon = images[(unsigned int)0]["url"];
+						epgEntry.strIconPath = programmeIcon.asString();
+					} else {
+						epgEntry.strIconPath = "";
+					}
 				} else {
+					epgEntry.strTitle = offAir;
+					epgEntry.iBroadcastId = 0;
+					epgEntry.strPlot = "";
 					epgEntry.strIconPath = "";
 				}
-			} else {
-				epgEntry.strTitle = offAir;
-				epgEntry.iBroadcastId = 0;
-				epgEntry.strPlot = "";
-				epgEntry.strIconPath = "";
+				epgEntry.iChannelId = channelId;
+				if (startTime.isString()) {
+					epgEntry.startTime = stringToInt(startTime.asString());
+					epgEntry.endTime = stringToInt(endTime.asString());
+				} else {
+					epgEntry.startTime = startTime.asUInt();
+					epgEntry.endTime = endTime.asUInt();
+				}
+				epgEntry.strPlotOutline = "";
+				epgEntry.iGenreType = filmonAPIgetGenre(group.asString());
+				epgEntry.iGenreSubType = 0;
+				(channel->epg).push_back(epgEntry);
+				entries++;
 			}
-			epgEntry.iChannelId = channelId;
-			if (startTime.isString()) {
-				epgEntry.startTime = stringToInt(startTime.asString());
-				epgEntry.endTime = stringToInt(endTime.asString());
-			} else {
-				epgEntry.startTime = startTime.asUInt();
-				epgEntry.endTime = endTime.asUInt();
-			}
-			epgEntry.strPlotOutline = "";
-			epgEntry.iGenreType = filmonAPIgetGenre(group.asString());
-			epgEntry.iGenreSubType = 0;
-			(channel->epg).push_back(epgEntry);
-			entries++;
+			XBMC->Log(LOG_DEBUG, "number of EPG entries is %u", entries);
+			clearResponse();
 		}
-		XBMC->Log(LOG_DEBUG, "number of EPG entries is %u", entries);
-		clearResponse();
 	}
 	return res;
 }
@@ -755,4 +762,3 @@ void filmonAPIgetUserStorage(long long *iTotal, long long *iUsed) {
 //	}
 //	filmonAPIDelete();
 //}
-
