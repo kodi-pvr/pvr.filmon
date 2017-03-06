@@ -346,7 +346,11 @@ bool filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL *channel) {
 		std::string streamURL;
 		unsigned int streamCount = streams.size();
 		unsigned int stream = 0;
-		
+		bool Pref_HD =false;
+		bool g_boolPreferHd = false;
+	   	/* read setting "preferhd" from settings.xml */
+		if (!XBMC->GetSetting("preferhd", &Pref_HD))
+			g_boolPreferHd = false;		
 		for (stream = 0; stream < streamCount; stream++) {
 			std::string quality = streams[stream]["quality"].asString();
 			if (g_boolPreferHd == true){
