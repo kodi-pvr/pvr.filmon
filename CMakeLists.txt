@@ -23,6 +23,11 @@ set(FILMON_SOURCES src/client.cpp
                    src/PVRFilmonData.cpp
                    src/md5.cpp)
 
+set(FILMON_HEADERS src/client.h
+                   src/FilmonAPI.h
+                   src/md5.h
+                   src/PVRFilmonData.h)
+
 build_addon(pvr.filmon FILMON DEPLIBS)
 
 include(CPack)
