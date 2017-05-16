@@ -1,3 +1,6 @@
+2.0.2
+Removed old no more needed version functions
+
 2.0.1
 Set dependency versions automatic during build
 Removed never used kodi to addon functions
