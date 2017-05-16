@@ -1,3 +1,9 @@
+2.0.1
+Set dependency versions automatic during build
+Removed never used kodi to addon functions
+Build system fixes
+Language updates
+
 2.0.0
 Initial Kodi v18 version
 
