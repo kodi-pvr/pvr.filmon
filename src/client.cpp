@@ -188,6 +188,9 @@ PVR_ERROR GetAddonCapabilities(PVR_ADDON_CAPABILITIES* pCapabilities) {
 	pCapabilities->bSupportsChannelScan = false;
 	pCapabilities->bSupportsLastPlayedPosition = false;
 	pCapabilities->bSupportsRecordingEdl = false;
+	pCapabilities->bSupportsRecordingsRename = false;
+	pCapabilities->bSupportsRecordingsLifetimeChange = false;
+	pCapabilities->bSupportsDescrambleInfo = false;
 
 	XBMC->Log(LOG_DEBUG, "%s - got PVR Filmon capabilities", __FUNCTION__);
 
@@ -418,7 +421,7 @@ long long LengthLiveStream(void) {
 }
 bool IsTimeshifting(void)
 {
-        return false;
+	return false;
 }
 PVR_ERROR RenameRecording(const PVR_RECORDING &recording) {
 	return PVR_ERROR_NOT_IMPLEMENTED;
@@ -461,7 +464,6 @@ bool SeekTime(double time, bool backwards, double *startpts) {
 }
 void SetSpeed(int) {
 }
-;
 time_t GetPlayingTime() {
 	return 0;
 }
@@ -472,19 +474,21 @@ time_t GetBufferTimeEnd() {
 	return 0;
 }
 bool IsRealTimeStream() {
-  return true;
+	return true;
 }
-PVR_ERROR UndeleteRecording(const PVR_RECORDING& recording)
-{
-  return PVR_ERROR_NOT_IMPLEMENTED;
+PVR_ERROR UndeleteRecording(const PVR_RECORDING& recording) {
+	return PVR_ERROR_NOT_IMPLEMENTED;
 }
-PVR_ERROR DeleteAllRecordingsFromTrash()
-{
-  return PVR_ERROR_NOT_IMPLEMENTED;
+PVR_ERROR DeleteAllRecordingsFromTrash() {
+	return PVR_ERROR_NOT_IMPLEMENTED;
 }
-PVR_ERROR SetEPGTimeFrame(int)
-{
-  return PVR_ERROR_NOT_IMPLEMENTED;
+PVR_ERROR SetEPGTimeFrame(int) {
+	return PVR_ERROR_NOT_IMPLEMENTED;
 }
-
+PVR_ERROR GetDescrambleInfo(PVR_DESCRAMBLE_INFO*) {
+	return PVR_ERROR_NOT_IMPLEMENTED;
+}
+PVR_ERROR SetRecordingLifetime(const PVR_RECORDING*) {
+	return PVR_ERROR_NOT_IMPLEMENTED;
+}
 }
