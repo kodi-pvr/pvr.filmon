@@ -205,14 +205,14 @@ const char *GetBackendName(void) {
 }
 
 const char *GetBackendVersion(void) {
-	static CStdString strBackendVersion = m_data->GetBackendVersion();
+	static string strBackendVersion = m_data->GetBackendVersion();
 	XBMC->Log(LOG_DEBUG, "%s - got PVR Filmon backend version; %s",
 			__FUNCTION__, strBackendVersion.c_str());
 	return strBackendVersion.c_str();
 }
 
 const char *GetConnectionString(void) {
-	static CStdString strConnectionString = m_data->GetConnection();
+	static string strConnectionString = m_data->GetConnection();
 	return strConnectionString.c_str();
 }
 
