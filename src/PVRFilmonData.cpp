@@ -130,8 +130,6 @@ PVR_ERROR PVRFilmonData::GetChannels(ADDON_HANDLE handle, bool bRadio) {
 			xbmcChannel.iChannelNumber = channel.iChannelNumber;
 			strncpy(xbmcChannel.strChannelName, channel.strChannelName.c_str(),
 					sizeof(xbmcChannel.strChannelName) - 1);
-			strncpy(xbmcChannel.strStreamURL, channel.strStreamURL.c_str(),
-					sizeof(xbmcChannel.strStreamURL) - 1);
 			xbmcChannel.iEncryptionSystem = channel.iEncryptionSystem;
 			strncpy(xbmcChannel.strIconPath, channel.strIconPath.c_str(),
 					sizeof(xbmcChannel.strIconPath) - 1);
@@ -427,4 +425,16 @@ PVR_ERROR PVRFilmonData::UpdateTimer(const PVR_TIMER& timer) {
 	} else {
 		return PVR_ERROR_SERVER_ERROR;
 	}
+}
+
+bool PVRFilmonData::GetChannelStreamUrl(const PVR_CHANNEL &channel, std::string &strStreamUrl) {
+	P8PLATFORM::CLockObject lock(m_mutex);
+	XBMC->Log(LOG_DEBUG, "getting channel stream url");
+	int chIndex = PVRFilmonData::UpdateChannel(channel.iUniqueId);
+	if (chIndex >= 0) {
+		PVRFilmonChannel ch = m_channels[chIndex];
+		strStreamUrl = ch.strStreamURL;
+		return true;
+	}
+	return false;
 }

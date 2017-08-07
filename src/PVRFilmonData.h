@@ -69,6 +69,8 @@ public:
 	virtual PVR_ERROR DeleteTimer(const PVR_TIMER &timer, bool bForceDelete);
 	virtual PVR_ERROR UpdateTimer(const PVR_TIMER &timer);
 
+	virtual bool GetChannelStreamUrl(const PVR_CHANNEL & channel, std::string &strStreamUrl);
+
 private:
 	int UpdateChannel(unsigned int channelId);
 	P8PLATFORM::CMutex m_mutex;
