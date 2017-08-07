@@ -205,14 +205,14 @@ const char *GetBackendName(void) {
 }
 
 const char *GetBackendVersion(void) {
-	static CStdString strBackendVersion = m_data->GetBackendVersion();
+	static string strBackendVersion = m_data->GetBackendVersion();
 	XBMC->Log(LOG_DEBUG, "%s - got PVR Filmon backend version; %s",
 			__FUNCTION__, strBackendVersion.c_str());
 	return strBackendVersion.c_str();
 }
 
 const char *GetConnectionString(void) {
-	static CStdString strConnectionString = m_data->GetConnection();
+	static string strConnectionString = m_data->GetConnection();
 	return strConnectionString.c_str();
 }
 
@@ -381,6 +381,10 @@ bool OpenLiveStream(const PVR_CHANNEL& channel) {
 	return false;
 }
 const char* GetLiveStreamURL(const PVR_CHANNEL& channel) {
+	static std::string currentStreamUrl;
+	if (m_data && m_data->GetChannelStreamUrl(channel, currentStreamUrl)) {
+		return currentStreamUrl.c_str();
+	}
 	return "";
 }
 void CloseLiveStream(void) {
@@ -444,9 +448,6 @@ void DemuxAbort(void) {
 DemuxPacket* DemuxRead(void) {
 	return NULL;
 }
-unsigned int GetChannelSwitchDelay(void) {
-	return 0;
-}
 void PauseStream(bool bPaused) {
 }
 bool CanPauseStream(void) {
@@ -490,5 +491,8 @@ PVR_ERROR GetDescrambleInfo(PVR_DESCRAMBLE_INFO*) {
 }
 PVR_ERROR SetRecordingLifetime(const PVR_RECORDING*) {
 	return PVR_ERROR_NOT_IMPLEMENTED;
+}
+PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES*) { 
+	return PVR_ERROR_NOT_IMPLEMENTED; 
 }
 }

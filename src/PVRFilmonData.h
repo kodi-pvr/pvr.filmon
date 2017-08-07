@@ -22,7 +22,7 @@
  */
 
 #include <vector>
-#include "p8-platform/util/StdString.h"
+#include "p8-platform/os.h"
 #include "p8-platform/threads/mutex.h"
 #include "client.h"
 #include "libXBMC_pvr.h"
@@ -68,6 +68,8 @@ public:
 	virtual PVR_ERROR AddTimer(const PVR_TIMER &timer);
 	virtual PVR_ERROR DeleteTimer(const PVR_TIMER &timer, bool bForceDelete);
 	virtual PVR_ERROR UpdateTimer(const PVR_TIMER &timer);
+
+	virtual bool GetChannelStreamUrl(const PVR_CHANNEL & channel, std::string &strStreamUrl);
 
 private:
 	int UpdateChannel(unsigned int channelId);
