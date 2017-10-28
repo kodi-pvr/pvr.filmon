@@ -156,21 +156,16 @@ int PVRFilmonData::GetChannelGroupsAmount(void) {
 	return m_groups.size();
 }
 
-PVR_ERROR PVRFilmonData::GetChannelStreamProperties(const PVR_CHANNEL* channel, PVR_NAMED_VALUE* properties, unsigned int* iPropertiesCount) {
-  std::vector<unsigned int> channelList = filmonAPIgetChannels();
-  unsigned int channelCount = channelList.size();
-  unsigned int channelId = 0;
+PVR_ERROR PVRFilmonData::GetChannelStreamProperties(const PVR_CHANNEL* channel, PVR_NAMED_VALUE* properties, unsigned int* iPropertiesCount)
+{
   std::string strUrl;
   P8PLATFORM::CLockObject lock(m_mutex);
-  for (unsigned int i = 0; i < channelCount; i++) {
-    FILMON_CHANNEL channel;
-    channelId = channelList[i];
-    for (unsigned int j = 0; j < m_channels.size(); j++) {
-      if (m_channels[j].iUniqueId == channelId) {
-        channel = m_channels[j];
-        strUrl = channel.strStreamURL;
-        break;
-      }
+  for (const auto& FilMonchannel : m_channels)
+  {
+    if (channel->iUniqueId == FilMonchannel.iUniqueId) 
+    {
+      strUrl = FilMonchannel.strStreamURL;
+      break;
     }
   }
 
