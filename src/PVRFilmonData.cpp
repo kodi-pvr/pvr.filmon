@@ -130,8 +130,6 @@ PVR_ERROR PVRFilmonData::GetChannels(ADDON_HANDLE handle, bool bRadio) {
 			xbmcChannel.iChannelNumber = channel.iChannelNumber;
 			strncpy(xbmcChannel.strChannelName, channel.strChannelName.c_str(),
 					sizeof(xbmcChannel.strChannelName) - 1);
-			strncpy(xbmcChannel.strStreamURL, channel.strStreamURL.c_str(),
-					sizeof(xbmcChannel.strStreamURL) - 1);
 			xbmcChannel.iEncryptionSystem = channel.iEncryptionSystem;
 			strncpy(xbmcChannel.strIconPath, channel.strIconPath.c_str(),
 					sizeof(xbmcChannel.strIconPath) - 1);
@@ -156,6 +154,35 @@ PVR_ERROR PVRFilmonData::GetChannels(ADDON_HANDLE handle, bool bRadio) {
 int PVRFilmonData::GetChannelGroupsAmount(void) {
 	XBMC->Log(LOG_DEBUG, "getting number of groups");
 	return m_groups.size();
+}
+
+PVR_ERROR PVRFilmonData::GetChannelStreamProperties(const PVR_CHANNEL* channel, PVR_NAMED_VALUE* properties, unsigned int* iPropertiesCount) {
+  std::vector<unsigned int> channelList = filmonAPIgetChannels();
+  unsigned int channelCount = channelList.size();
+  unsigned int channelId = 0;
+  std::string strUrl;
+  P8PLATFORM::CLockObject lock(m_mutex);
+  for (unsigned int i = 0; i < channelCount; i++) {
+    FILMON_CHANNEL channel;
+    channelId = channelList[i];
+    for (unsigned int j = 0; j < m_channels.size(); j++) {
+      if (m_channels[j].iUniqueId == channelId) {
+        channel = m_channels[j];
+        strUrl = channel.strStreamURL;
+        break;
+      }
+    }
+  }
+
+  if (strUrl.empty()) {
+    return PVR_ERROR_FAILED;
+  }
+  strncpy(properties[0].strName, PVR_STREAM_PROPERTY_STREAMURL, sizeof(properties[0].strName));
+  strncpy(properties[0].strValue, strUrl.c_str(), sizeof(properties[0].strValue));
+
+  *iPropertiesCount = 1;
+
+  return PVR_ERROR_NO_ERROR;
 }
 
 PVR_ERROR PVRFilmonData::GetChannelGroups(ADDON_HANDLE handle, bool bRadio) {
@@ -243,7 +270,7 @@ PVR_ERROR PVRFilmonData::GetEPGForChannel(ADDON_HANDLE handle,
 				memset(&tag, 0, sizeof(EPG_TAG));
 				tag.iUniqueBroadcastId = broadcastIdCount++;
 				tag.strTitle = epgEntry.strTitle.c_str();
-				tag.iChannelNumber = epgEntry.iChannelId;
+				tag.iUniqueChannelId = epgEntry.iChannelId;
 				tag.startTime = epgEntry.startTime;
 				tag.endTime = epgEntry.endTime;
 				tag.strPlotOutline = epgEntry.strPlotOutline.c_str();
@@ -314,8 +341,6 @@ PVR_ERROR PVRFilmonData::GetRecordings(ADDON_HANDLE handle) {
 				sizeof(xbmcRecording.strTitle) - 1);
 		strncpy(xbmcRecording.strDirectory, "Filmon",
 				sizeof(xbmcRecording.strChannelName) - 1);
-		strncpy(xbmcRecording.strStreamURL, recording.strStreamURL.c_str(),
-				sizeof(xbmcRecording.strStreamURL) - 1);
 		strncpy(xbmcRecording.strIconPath, recording.strIconPath.c_str(),
 				sizeof(xbmcRecording.strIconPath) - 1);
 		strncpy(xbmcRecording.strThumbnailPath,
@@ -331,6 +356,27 @@ PVR_ERROR PVRFilmonData::GetRecordings(ADDON_HANDLE handle) {
 		PVR->TransferRecordingEntry(handle, &xbmcRecording);
 	}
 	return PVR_ERROR_NO_ERROR;
+}
+
+PVR_ERROR PVRFilmonData::GetRecordingStreamProperties(const PVR_RECORDING* recording, PVR_NAMED_VALUE* properties, unsigned int* iPropertiesCount) {
+  P8PLATFORM::CLockObject lock(m_mutex);
+  std:string strRecordingFile;
+  m_recordings = filmonAPIgetRecordings();
+  for (const auto& FilMonRecording : m_recordings)
+  {
+    if (strcmp(FilMonRecording.strRecordingId.c_str(), recording->strRecordingId) == 0) {
+      strRecordingFile = FilMonRecording.strStreamURL;
+      break;
+    }
+  }
+
+  if (strRecordingFile.empty())
+    return PVR_ERROR_SERVER_ERROR;
+
+  strncpy(properties[0].strName, PVR_STREAM_PROPERTY_STREAMURL, sizeof(properties[0].strName) - 1);
+  strncpy(properties[0].strValue, strRecordingFile.c_str(), sizeof(properties[0].strValue) - 1);
+  *iPropertiesCount = 1;
+  return PVR_ERROR_NO_ERROR;
 }
 
 PVR_ERROR PVRFilmonData::DeleteRecording(const PVR_RECORDING &recording) {
