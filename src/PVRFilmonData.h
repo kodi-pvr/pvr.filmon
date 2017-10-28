@@ -69,8 +69,8 @@ public:
 	virtual PVR_ERROR DeleteTimer(const PVR_TIMER &timer, bool bForceDelete);
 	virtual PVR_ERROR UpdateTimer(const PVR_TIMER &timer);
 
-  virtual PVR_ERROR GetChannelStreamProperties(const PVR_CHANNEL* channel, PVR_NAMED_VALUE* properties, unsigned int* iPropertiesCount);
-  virtual PVR_ERROR GetRecordingStreamProperties(const PVR_RECORDING* recording, PVR_NAMED_VALUE* properties, unsigned int* iPropertiesCount);
+	virtual PVR_ERROR GetChannelStreamProperties(const PVR_CHANNEL* channel, PVR_NAMED_VALUE* properties, unsigned int* iPropertiesCount);
+	virtual PVR_ERROR GetRecordingStreamProperties(const PVR_RECORDING* recording, PVR_NAMED_VALUE* properties, unsigned int* iPropertiesCount);
 
 private:
 	int UpdateChannel(unsigned int channelId);

@@ -160,8 +160,8 @@ PVR_ERROR PVRFilmonData::GetChannelStreamProperties(const PVR_CHANNEL* channel, 
   std::vector<unsigned int> channelList = filmonAPIgetChannels();
   unsigned int channelCount = channelList.size();
   unsigned int channelId = 0;
-  std::string strUrl = "";
-
+  std::string strUrl;
+  P8PLATFORM::CLockObject lock(m_mutex);
   for (unsigned int i = 0; i < channelCount; i++) {
     FILMON_CHANNEL channel;
     channelId = channelList[i];
@@ -172,7 +172,6 @@ PVR_ERROR PVRFilmonData::GetChannelStreamProperties(const PVR_CHANNEL* channel, 
         break;
       }
     }
-
   }
 
   if (strUrl.empty()) {
@@ -361,10 +360,10 @@ PVR_ERROR PVRFilmonData::GetRecordings(ADDON_HANDLE handle) {
 
 PVR_ERROR PVRFilmonData::GetRecordingStreamProperties(const PVR_RECORDING* recording, PVR_NAMED_VALUE* properties, unsigned int* iPropertiesCount) {
   P8PLATFORM::CLockObject lock(m_mutex);
-  std:string strRecordingFile = "";
+  std:string strRecordingFile;
   m_recordings = filmonAPIgetRecordings();
-  for (std::vector<PVRFilmonRecording>::iterator it = m_recordings.begin(); it != m_recordings.end(); it++) {
-    PVRFilmonRecording &FilMonRecording = *it;
+  for (const auto& FilMonRecording : m_recordings)
+  {
     if (strcmp(FilMonRecording.strRecordingId.c_str(), recording->strRecordingId) == 0) {
       strRecordingFile = FilMonRecording.strStreamURL;
       break;
