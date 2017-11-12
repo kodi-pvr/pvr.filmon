@@ -22,7 +22,6 @@
  */
 
 #include <vector>
-#include "p8-platform/util/StdString.h"
 #include "p8-platform/threads/mutex.h"
 #include "client.h"
 #include "libXBMC_pvr.h"
