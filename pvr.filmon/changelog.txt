@@ -1,3 +1,6 @@
+2.2.1
+Remove StdString usage
+
 2.2.0
 Update to PVR addon API v5.7.0
 bump jsoncpp depends to 0.10.6
