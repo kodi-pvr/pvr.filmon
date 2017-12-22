@@ -376,9 +376,6 @@ PVR_ERROR DeleteChannel(const PVR_CHANNEL &channel) {
 PVR_ERROR RenameChannel(const PVR_CHANNEL &channel) {
 	return PVR_ERROR_NOT_IMPLEMENTED;
 }
-PVR_ERROR MoveChannel(const PVR_CHANNEL &channel) {
-	return PVR_ERROR_NOT_IMPLEMENTED;
-}
 PVR_ERROR OpenDialogChannelSettings(const PVR_CHANNEL &channel) {
 	return PVR_ERROR_NOT_IMPLEMENTED;
 }
@@ -402,9 +399,6 @@ long long SeekRecordedStream(long long iPosition,
 		int iWhence /* = SEEK_SET */) {
 	return 0;
 }
-long long PositionRecordedStream(void) {
-	return -1;
-}
 long long LengthRecordedStream(void) {
 	return 0;
 }
@@ -422,9 +416,6 @@ int ReadLiveStream(unsigned char *pBuffer, unsigned int iBufferSize) {
 	return 0;
 }
 long long SeekLiveStream(long long iPosition, int iWhence /* = SEEK_SET */) {
-	return -1;
-}
-long long PositionLiveStream(void) {
 	return -1;
 }
 long long LengthLiveStream(void) {
@@ -471,15 +462,6 @@ bool SeekTime(double time, bool backwards, double *startpts) {
 	}
 }
 void SetSpeed(int) {
-}
-time_t GetPlayingTime() {
-	return 0;
-}
-time_t GetBufferTimeStart() {
-	return 0;
-}
-time_t GetBufferTimeEnd() {
-	return 0;
 }
 bool IsRealTimeStream() {
 	return true;
