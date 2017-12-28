@@ -20,17 +20,19 @@
 
 #define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
 
+#include "FilmonAPI.h"
+
 #include <algorithm>
+#include <cstdio>
+#include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <cstdio>
-#include <sstream>
 
 #include <json/json.h>
 
 #include "p8-platform/util/timeutils.h" // for usleep
 
-#include "FilmonAPI.h"
 #include "client.h"
 #include "md5.h"
 
@@ -217,8 +219,10 @@ bool filmonAPIgetSessionKey(void) {
 	bool res = filmonRequest("tv/api/init?channelProvider=ipad&app_id=IGlsbSBuVCJ7UDwZBl0eBR4JGgEBERhRXlBcWl0CEw==|User-Agent=Mozilla%2F5.0%20(Windows%3B%20U%3B%20Windows%20NT%205.1%3B%20en-GB%3B%20rv%3A1.9.0.3)%20Gecko%2F2008092417%20Firefox%2F3.0.3");
 	if (res == true) {
 		Json::Value root;
-		Json::Reader reader;
-		reader.parse(response, root);
+		std::string jsonReaderError;
+		Json::CharReaderBuilder jsonReaderBuilder;
+		std::unique_ptr<Json::CharReader> const reader(jsonReaderBuilder.newCharReader());
+		reader->parse(response.c_str(), response.c_str() + response.size(), &root, &jsonReaderError);
 		Json::Value sessionKey = root["session_key"];
 		sessionKeyParam = "session_key=";
 		sessionKeyParam.append(sessionKey.asString());
@@ -245,8 +249,10 @@ bool filmonAPIlogin(std::string username, std::string password) {
 		res = filmonRequest("tv/api/login", sessionKeyParam + "&" + params, 1);
 		if (res) {
 			Json::Value root;
-			Json::Reader reader;
-			reader.parse(response, root);
+			std::string jsonReaderError;
+			Json::CharReaderBuilder jsonReaderBuilder;
+			std::unique_ptr<Json::CharReader> const reader(jsonReaderBuilder.newCharReader());
+			reader->parse(response.c_str(), response.c_str() + response.size(), &root, &jsonReaderError);
 			// Favorite channels
 			channelList.clear();
 			Json::Value favouriteChannels = root["favorite-channels"];
@@ -281,12 +287,15 @@ void filmonAPIgetswfPlayer() {
 			token = strtok(NULL, " ");
 		}
 		Json::Value root;
-		Json::Reader reader;
-		if (reader.parse(std::string(token), root)) {
+		std::string jsonReaderError;
+		Json::CharReaderBuilder jsonReaderBuilder;
+		std::unique_ptr<Json::CharReader> const reader(jsonReaderBuilder.newCharReader());
+		if (reader->parse(std::string(token).c_str(), std::string(token).c_str() + std::string(token).size(), &root, &jsonReaderError))
+		{
 			Json::Value streamer = root["streamer"];
 			swfPlayer = streamer.asString();
 			XBMC->Log(LOG_DEBUG, "parsed flash config %s",
-					swfPlayer.c_str());
+			swfPlayer.c_str());
 		}
 		clearResponse();
 	}
@@ -333,8 +342,10 @@ bool filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL *channel) {
 			sessionKeyParam);
 	if (res == true) {
 		Json::Value root;
-		Json::Reader reader;
-		reader.parse(response, root);
+		std::string jsonReaderError;
+		Json::CharReaderBuilder jsonReaderBuilder;
+		std::unique_ptr<Json::CharReader> const reader(jsonReaderBuilder.newCharReader());
+		reader->parse(response.c_str(), response.c_str() + response.size(), &root, &jsonReaderError);
 		Json::Value title = root["title"];
 		Json::Value group = root["group"];
 		Json::Value icon = root["extra_big_logo"];
@@ -403,9 +414,8 @@ bool filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL *channel) {
 		if (res == true) {
 			// Get EPG
 			XBMC->Log(LOG_DEBUG, "building EPG");
-			Json::Value root;
-			Json::Reader reader;
-			reader.parse(response, root);
+			jsonReaderError = "";
+			reader->parse(response.c_str(), response.c_str() + response.size(), &root, &jsonReaderError);
 			unsigned int entries = 0;
 			unsigned int programmeCount = root.size();
 			std::string offAir = std::string("OFF_AIR");
@@ -462,8 +472,10 @@ std::vector<FILMON_CHANNEL_GROUP> filmonAPIgetChannelGroups() {
 	bool res = filmonRequest("tv/api/groups", sessionKeyParam);
 	if (res == true) {
 		Json::Value root;
-		Json::Reader reader;
-		reader.parse(response, root);
+		std::string jsonReaderError;
+		Json::CharReaderBuilder jsonReaderBuilder;
+		std::unique_ptr<Json::CharReader> const reader(jsonReaderBuilder.newCharReader());
+		reader->parse(response.c_str(), response.c_str() + response.size(), &root, &jsonReaderError);
 		for (unsigned int i = 0; i < root.size(); i++) {
 			Json::Value groupName = root[i]["group"];
 			Json::Value groupId = root[i]["group_id"];
@@ -514,8 +526,10 @@ bool filmonAPIgetRecordingsTimers(bool completed) {
 	bool res = filmonRequest("tv/api/dvr/list", sessionKeyParam);
 	if (res == true) {
 		Json::Value root;
-		Json::Reader reader;
-		reader.parse(response, root);
+		std::string jsonReaderError;
+		Json::CharReaderBuilder jsonReaderBuilder;
+		std::unique_ptr<Json::CharReader> const reader(jsonReaderBuilder.newCharReader());
+		reader->parse(response.c_str(), response.c_str() + response.size(), &root, &jsonReaderError);
 
 		// Usage
 		Json::Value total = root["userStorage"]["total"];
@@ -618,8 +632,10 @@ bool filmonAPIdeleteRecording(unsigned int recordingId) {
 					sessionKeyParam + "&" + params);
 			if (res) {
 				Json::Value root;
-				Json::Reader reader;
-				reader.parse(response, root);
+				std::string jsonReaderError;
+				Json::CharReaderBuilder jsonReaderBuilder;
+				std::unique_ptr<Json::CharReader> const reader(jsonReaderBuilder.newCharReader());
+				reader->parse(response.c_str(), response.c_str() + response.size(), &root, &jsonReaderError);
 				if (root["success"].asBool()) {
 					recordings.erase(recordings.begin() + i);
 					XBMC->Log(LOG_DEBUG, "deleted recording");
@@ -649,8 +665,10 @@ bool filmonAPIaddTimer(int channelId, time_t startTime, time_t endTime) {
 			sessionKeyParam);
 	if (res) {
 		Json::Value root;
-		Json::Reader reader;
-		reader.parse(response, root);
+		std::string jsonReaderError;
+		Json::CharReaderBuilder jsonReaderBuilder;
+		std::unique_ptr<Json::CharReader> const reader(jsonReaderBuilder.newCharReader());
+		reader->parse(response.c_str(), response.c_str() + response.size(), &root, &jsonReaderError);
 		for (unsigned int i = 0; i < root.size(); i++) {
 			Json::Value start = root[i]["startdatetime"];
 			Json::Value end = root[i]["enddatetime"];
@@ -678,8 +696,8 @@ bool filmonAPIaddTimer(int channelId, time_t startTime, time_t endTime) {
 						sessionKeyParam + "&" + params);
 				if (res) {
 					Json::Value root;
-					Json::Reader reader;
-					reader.parse(response, root);
+					jsonReaderError = "";
+					reader->parse(response.c_str(), response.c_str() + response.size(), &root, &jsonReaderError);
 					if (root["success"].asBool()) {
 						FILMON_TIMER timer;
 						timer.iClientIndex = stringToInt(programmeId);
@@ -724,8 +742,10 @@ bool filmonAPIdeleteTimer(unsigned int timerId, bool bForceDelete) {
 						sessionKeyParam + "&" + params);
 				if (res) {
 					Json::Value root;
-					Json::Reader reader;
-					reader.parse(response, root);
+					std::string jsonReaderError;
+					Json::CharReaderBuilder jsonReaderBuilder;
+					std::unique_ptr<Json::CharReader> const reader(jsonReaderBuilder.newCharReader());
+					reader->parse(response.c_str(), response.c_str() + response.size(), &root, &jsonReaderError);
 					if (root["success"].asBool()) {
 						timers.erase(timers.begin() + i);
 						XBMC->Log(LOG_DEBUG, "deleted timer");
