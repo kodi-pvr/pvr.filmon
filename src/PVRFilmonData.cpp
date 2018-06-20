@@ -158,6 +158,9 @@ int PVRFilmonData::GetChannelGroupsAmount(void) {
 
 PVR_ERROR PVRFilmonData::GetChannelStreamProperties(const PVR_CHANNEL* channel, PVR_NAMED_VALUE* properties, unsigned int* iPropertiesCount)
 {
+  if (*iPropertiesCount < 2)
+    return PVR_ERROR_INVALID_PARAMETERS;
+
   std::string strUrl;
   P8PLATFORM::CLockObject lock(m_mutex);
   for (const auto& FilMonchannel : m_channels)
@@ -172,10 +175,12 @@ PVR_ERROR PVRFilmonData::GetChannelStreamProperties(const PVR_CHANNEL* channel, 
   if (strUrl.empty()) {
     return PVR_ERROR_FAILED;
   }
-  strncpy(properties[0].strName, PVR_STREAM_PROPERTY_STREAMURL, sizeof(properties[0].strName));
-  strncpy(properties[0].strValue, strUrl.c_str(), sizeof(properties[0].strValue));
+  strncpy(properties[0].strName, PVR_STREAM_PROPERTY_STREAMURL, sizeof(properties[0].strName) - 1);
+  strncpy(properties[0].strValue, strUrl.c_str(), sizeof(properties[0].strValue) - 1);
+  strncpy(properties[1].strName, PVR_STREAM_PROPERTY_ISREALTIMESTREAM, sizeof(properties[1].strName) - 1);
+  strncpy(properties[1].strValue, "true", sizeof(properties[1].strValue) - 1);
 
-  *iPropertiesCount = 1;
+  *iPropertiesCount = 2;
 
   return PVR_ERROR_NO_ERROR;
 }
