@@ -226,11 +226,11 @@ PVR_ERROR GetDriveSpace(long long *iTotal, long long *iUsed) {
 	return PVR_ERROR_NO_ERROR;
 }
 
-PVR_ERROR GetEPGForChannel(ADDON_HANDLE handle, const PVR_CHANNEL &channel,
+PVR_ERROR GetEPGForChannel(ADDON_HANDLE handle, int iChannelUid,
 		time_t iStart, time_t iEnd) {
 	if (m_data) {
 		XBMC->Log(LOG_DEBUG, "%s - getting PVR Filmon EPG", __FUNCTION__);
-		return m_data->GetEPGForChannel(handle, channel, iStart, iEnd);
+		return m_data->GetEPGForChannel(handle, iChannelUid, iStart, iEnd);
 	}
 	XBMC->Log(LOG_DEBUG, "%s - failed getting PVR Filmon EPG", __FUNCTION__);
 	return PVR_ERROR_SERVER_ERROR;
@@ -421,10 +421,6 @@ long long SeekLiveStream(long long iPosition, int iWhence /* = SEEK_SET */) {
 long long LengthLiveStream(void) {
 	return -1;
 }
-bool IsTimeshifting(void)
-{
-	return false;
-}
 PVR_ERROR RenameRecording(const PVR_RECORDING &recording) {
 	return PVR_ERROR_NOT_IMPLEMENTED;
 }
@@ -445,6 +441,9 @@ void DemuxAbort(void) {
 }
 DemuxPacket* DemuxRead(void) {
 	return NULL;
+}
+void FillBuffer(bool mode)
+{
 }
 void PauseStream(bool bPaused) {
 }
