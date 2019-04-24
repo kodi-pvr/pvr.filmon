@@ -56,7 +56,7 @@ public:
 			const PVR_CHANNEL_GROUP &group);
 
 	virtual PVR_ERROR GetEPGForChannel(ADDON_HANDLE handle,
-			const PVR_CHANNEL &channel, time_t iStart, time_t iEnd);
+			int iChannelUid, time_t iStart, time_t iEnd);
 
 	virtual int GetRecordingsAmount(void);
 	virtual PVR_ERROR GetRecordings(ADDON_HANDLE handle);

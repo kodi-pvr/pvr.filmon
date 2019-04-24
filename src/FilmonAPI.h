@@ -99,7 +99,6 @@ typedef struct {
 	time_t firstAired;
 	int iParentalRating;
 	int iStarRating;
-	bool bNotify;
 	int iSeriesNumber;
 	int iEpisodeNumber;
 	int iEpisodePartNumber;

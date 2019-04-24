@@ -256,11 +256,11 @@ int PVRFilmonData::UpdateChannel(unsigned int channelId) {
 
 // Called periodically to refresh EPG
 PVR_ERROR PVRFilmonData::GetEPGForChannel(ADDON_HANDLE handle,
-		const PVR_CHANNEL &channel, time_t iStart, time_t iEnd) {
+		int iChannelUid, time_t iStart, time_t iEnd) {
 	P8PLATFORM::CLockObject lock(m_mutex);
 	XBMC->Log(LOG_DEBUG, "getting EPG for channel");
 	unsigned int broadcastIdCount = lastTimeChannels;
-	int chIndex = PVRFilmonData::UpdateChannel(channel.iUniqueId);
+	int chIndex = PVRFilmonData::UpdateChannel(iChannelUid);
 	if (chIndex >= 0) {
 		PVRFilmonChannel ch = m_channels[chIndex];
 		for (unsigned int epgId = 0; epgId < ch.epg.size(); epgId++) {
@@ -288,7 +288,6 @@ PVR_ERROR PVRFilmonData::GetEPGForChannel(ADDON_HANDLE handle,
 				tag.firstAired = 0;
 				tag.iParentalRating = 0;
 				tag.iStarRating = 0;
-				tag.bNotify = false;
 				tag.iSeriesNumber = 0;
 				tag.iEpisodeNumber = 0;
 				tag.iEpisodePartNumber = 0;
