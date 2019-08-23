@@ -1,3 +1,17 @@
+2.4.5
+Update build system version and cleanup
+Fix package check for JsonCpp
+Added AppVeyor for Windows related build tests
+
+2.4.4
+Updated Language files from Transifex
+
+2.4.3
+Updated Language files from Transifex
+
+2.4.2
+Updated Language files from Transifex
+
 2.4.1
 Update to PVR addon API v5.10.1
 
