@@ -23,6 +23,10 @@ set(FILMON_HEADERS src/client.h
                    src/md5.h
                    src/PVRFilmonData.h)
 
+if(WIN32)
+  add_compile_options(/wd4996)
+endif()
+
 build_addon(pvr.filmon FILMON DEPLIBS)
 
 include(CPack)
