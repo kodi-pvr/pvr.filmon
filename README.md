@@ -1,5 +1,4 @@
 [![Build Status](https://travis-ci.org/kodi-pvr/pvr.filmon.svg?branch=Leia)](https://travis-ci.org/kodi-pvr/pvr.filmon/branches)
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/kodi-pvr/pvr.filmon?branch=Leia&svg=true)](https://ci.appveyor.com/project/kodi-pvr/pvr-filmon?branch=Leia)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/5120/badge.svg)](https://scan.coverity.com/projects/5120)
 
 # Filmon PVR
