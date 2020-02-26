@@ -1,3 +1,14 @@
+3.1.3
+Replace AppVeyor with Azure for test build (better performance)
+Add p8-platform to addon depends instead of from kodi
+Updated Language files from Transifex
+
+3.1.2
+Updated Language files from Transifex
+
+3.1.1
+Updated Language files from Transifex
+
 3.1.0
 Update: Recompile for 6.1.0 PVR Addon API compatibility
 
