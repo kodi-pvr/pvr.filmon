@@ -285,12 +285,12 @@ PVR_ERROR PVRFilmonData::GetEPGForChannel(ADDON_HANDLE handle,
 				tag.iGenreType = epgEntry.iGenreType;
 				tag.iGenreSubType = epgEntry.iGenreSubType;
 				tag.strGenreDescription = "";
-				tag.firstAired = 0;
+				tag.strFirstAired = "";
 				tag.iParentalRating = 0;
 				tag.iStarRating = 0;
-				tag.iSeriesNumber = 0;
-				tag.iEpisodeNumber = 0;
-				tag.iEpisodePartNumber = 0;
+				tag.iSeriesNumber = EPG_TAG_INVALID_SERIES_EPISODE;
+				tag.iEpisodeNumber = EPG_TAG_INVALID_SERIES_EPISODE;
+				tag.iEpisodePartNumber = EPG_TAG_INVALID_SERIES_EPISODE;
 				tag.strEpisodeName = "";
 				tag.iFlags = EPG_TAG_FLAG_UNDEFINED;
 				PVR->TransferEpgEntry(handle, &tag);
@@ -322,6 +322,8 @@ PVR_ERROR PVRFilmonData::GetRecordings(ADDON_HANDLE handle) {
 			it != m_recordings.end(); it++) {
 		PVRFilmonRecording &recording = *it;
 		PVR_RECORDING xbmcRecording;
+		xbmcRecording.iSeriesNumber = PVR_RECORDING_INVALID_SERIES_EPISODE;
+		xbmcRecording.iEpisodeNumber = PVR_RECORDING_INVALID_SERIES_EPISODE;
 
 		xbmcRecording.iDuration = recording.iDuration;
 		xbmcRecording.iGenreType = recording.iGenreType;
