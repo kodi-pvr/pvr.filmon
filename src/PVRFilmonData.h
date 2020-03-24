@@ -21,11 +21,12 @@
  *
  */
 
-#include <vector>
-#include "p8-platform/threads/mutex.h"
 #include "client.h"
 #include "kodi/libXBMC_pvr.h"
 #include "FilmonAPI.h"
+
+#include <mutex>
+#include <vector>
 
 #define FILMON_CACHE_TIME 10800 // 3 hours
 
@@ -73,7 +74,7 @@ public:
 
 private:
 	int UpdateChannel(unsigned int channelId);
-	P8PLATFORM::CMutex m_mutex;
+	std::mutex m_mutex;
 	std::vector<PVRFilmonChannelGroup> m_groups;
 	std::vector<PVRFilmonChannel> m_channels;
 	std::vector<PVRFilmonRecording> m_recordings;

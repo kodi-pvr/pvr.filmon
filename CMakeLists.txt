@@ -4,14 +4,12 @@ project(pvr.filmon)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
 
 find_package(Kodi REQUIRED)
-find_package(p8-platform REQUIRED)
 find_package(JsonCpp REQUIRED)
 
-include_directories(${p8-platform_INCLUDE_DIRS}
-                    ${JSONCPP_INCLUDE_DIRS}
+include_directories(${JSONCPP_INCLUDE_DIRS}
                     ${KODI_INCLUDE_DIR}/..) # Hack way with "/..", need bigger Kodi cmake rework to match right include ways
 
-set(DEPLIBS ${p8-platform_LIBRARIES} ${JSONCPP_LIBRARIES})
+set(DEPLIBS ${JSONCPP_LIBRARIES})
 
 set(FILMON_SOURCES src/client.cpp
                    src/FilmonAPI.cpp
