@@ -8,6 +8,10 @@ Filmon PVR client addon for [Kodi] (https://kodi.tv)
 
 ## Build instructions
 
+When building the addon you have to use the correct branch depending on which version of Kodi you're building against.
+If you want to build the addon to be compatible with the latest kodi `master` commit, you need to checkout the branch with the current kodi codename.
+Also make sure you follow this README from the branch in question.
+
 ### Linux
 
 1. `git clone --branch master https://github.com/xbmc/xbmc.git`
