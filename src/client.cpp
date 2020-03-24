@@ -22,7 +22,6 @@
 
 #include "client.h"
 
-#include "p8-platform/util/util.h"
 #include "PVRFilmonData.h"
 #include "kodi/xbmc_pvr_dll.h"
 
@@ -85,14 +84,17 @@ ADDON_STATUS ADDON_Create(void* hdl, void* props) {
 
 	XBMC = new CHelper_libXBMC_addon;
 	if (!XBMC->RegisterMe(hdl)) {
-		SAFE_DELETE(XBMC);
+		delete XBMC;
+		XBMC = nullptr;
 		return ADDON_STATUS_PERMANENT_FAILURE;
 	}
 
 	PVR = new CHelper_libXBMC_pvr;
 	if (!PVR->RegisterMe(hdl)) {
-		SAFE_DELETE(PVR);
-		SAFE_DELETE(XBMC);
+		delete PVR;
+		PVR = nullptr;
+		delete XBMC;
+		XBMC = nullptr;
 		return ADDON_STATUS_PERMANENT_FAILURE;
 	}
 
