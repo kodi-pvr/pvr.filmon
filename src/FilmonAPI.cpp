@@ -23,15 +23,15 @@
 #include "FilmonAPI.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cstdio>
 #include <memory>
 #include <sstream>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include <json/json.h>
-
-#include "p8-platform/util/timeutils.h" // for usleep
 
 #include "client.h"
 #include "md5.h"
@@ -172,7 +172,7 @@ bool filmonRequest(std::string path, std::string params,
 		if (!fileHandle) {
 			XBMC->Log(LOG_ERROR,  "request failure");
 			clearResponse();
-			usleep(REQUEST_RETRY_TIMEOUT);
+			std::this_thread::sleep_for(std::chrono::microseconds(REQUEST_RETRY_TIMEOUT));
 		} else {
 			char buffer[4096];
 			while (int read = XBMC->ReadFile(fileHandle, buffer, 4096))
