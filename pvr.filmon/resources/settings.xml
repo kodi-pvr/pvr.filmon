@@ -1,6 +1,32 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<settings>
-    <setting id="username" type="text" label="30000" default="" />
-    <setting id="password" type="text" label="30001" option="hidden" default="" />
-    <setting id="preferhd" type="bool" label="30002" default="false" />
+<settings version="1">
+  <section id="addon" label="-1" help="-1">
+    <category id="main" label="128" help="-1">
+      <group id="1" label="-1">
+        <setting id="username" type="string" label="30000">
+          <level>0</level>
+          <default></default>
+          <constraints>
+            <allowempty>true</allowempty>
+          </constraints>
+          <control type="edit" format="string" />
+        </setting>
+        <setting id="password" type="string" label="30001">
+          <level>0</level>
+          <default></default>
+          <constraints>
+            <allowempty>true</allowempty>
+          </constraints>
+          <control type="edit" format="string">
+            <hidden>true</hidden>
+          </control>
+        </setting>
+        <setting id="loopforever" type="boolean" label="30002">
+          <level>0</level>
+          <default>false</default>
+          <control type="toggle"/>
+        </setting>
+      </group>
+    </category>
+  </section>
 </settings>
