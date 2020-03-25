@@ -26,6 +26,6 @@
 extern bool m_bCreated;
 extern std::string g_strUserPath;
 extern std::string g_strClientPath;
-extern ADDON::CHelper_libXBMC_addon *XBMC;
-extern CHelper_libXBMC_pvr *PVR;
+extern ADDON::CHelper_libXBMC_addon* XBMC;
+extern CHelper_libXBMC_pvr* PVR;
 extern bool g_boolPreferHd;

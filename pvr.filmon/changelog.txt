@@ -1,5 +1,12 @@
+3.2.0
+- Remove p8-platform usage and do by C++11
+- Major code format cleanups (no working changes)
+- Update debian build code
+- Change settings to new Kodi format
+- Add license as LICENSE.md and include in addon.xml with source URL
+
 3.1.4
-- Upadte PVR API 6.2.0
+- Update PVR API 6.2.0
 
 3.1.3
 Replace AppVeyor with Azure for test build (better performance)

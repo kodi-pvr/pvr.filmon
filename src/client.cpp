@@ -1,7 +1,7 @@
 /*
  *      Copyright (C) 2011 Pulse-Eight
  *      http://www.pulse-eight.com/
- *		Copyright (C) 2014 Stephen Denham
+ *    Copyright (C) 2014 Stephen Denham
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@
 
 #include "client.h"
 
-#include "p8-platform/util/util.h"
 #include "PVRFilmonData.h"
 #include "kodi/xbmc_pvr_dll.h"
 
@@ -35,7 +34,7 @@ using namespace ADDON;
 
 bool m_bCreated = false;
 ADDON_STATUS m_CurStatus = ADDON_STATUS_UNKNOWN;
-PVRFilmonData *m_data = NULL;
+PVRFilmonData* m_data = nullptr;
 bool m_bIsPlaying = false;
 PVRFilmonChannel m_currentChannel;
 
@@ -49,313 +48,343 @@ std::string g_strUsername = "";
 std::string g_strPassword = "";
 bool g_boolPreferHd = false;
 
-CHelper_libXBMC_addon *XBMC = NULL;
-CHelper_libXBMC_pvr *PVR = NULL;
+CHelper_libXBMC_addon* XBMC = nullptr;
+CHelper_libXBMC_pvr* PVR = nullptr;
 
-extern "C" {
+extern "C"
+{
 
-void ADDON_ReadSettings(void) {
-	char buffer[1024] = "";
+void ADDON_ReadSettings(void)
+{
+  char buffer[1024] = "";
 
-	/* read setting "username" from settings.xml */
-	if (XBMC->GetSetting("username", buffer))
-		g_strUsername = buffer;
-	else
-		g_strUsername = "";
-	buffer[0] = 0; /* Set the end of string */
+  /* read setting "username" from settings.xml */
+  if (XBMC->GetSetting("username", buffer))
+    g_strUsername = buffer;
+  else
+    g_strUsername = "";
+  buffer[0] = 0; /* Set the end of string */
 
-	/* read setting "password" from settings.xml */
-	if (XBMC->GetSetting("password", buffer))
-		g_strPassword = buffer;
-	else
-		g_strPassword = "";
+  /* read setting "password" from settings.xml */
+  if (XBMC->GetSetting("password", buffer))
+    g_strPassword = buffer;
+  else
+    g_strPassword = "";
 
-	/* read setting "preferhd" from settings.xml */
-	if (!XBMC->GetSetting("preferhd", &g_boolPreferHd))
-		g_boolPreferHd = false;
+  /* read setting "preferhd" from settings.xml */
+  if (!XBMC->GetSetting("preferhd", &g_boolPreferHd))
+    g_boolPreferHd = false;
 
-	XBMC->Log(LOG_DEBUG, "%s - read PVR Filmon settings", __FUNCTION__);
+  XBMC->Log(LOG_DEBUG, "%s - read PVR Filmon settings", __FUNCTION__);
 }
 
-ADDON_STATUS ADDON_Create(void* hdl, void* props) {
-	if (!hdl || !props)
-		return ADDON_STATUS_UNKNOWN;
+ADDON_STATUS ADDON_Create(void* hdl, void* props)
+{
+  if (!hdl || !props)
+    return ADDON_STATUS_UNKNOWN;
 
-	PVR_PROPERTIES* pvrprops = (PVR_PROPERTIES*) props;
+  PVR_PROPERTIES* pvrprops = (PVR_PROPERTIES*)props;
 
-	XBMC = new CHelper_libXBMC_addon;
-	if (!XBMC->RegisterMe(hdl)) {
-		SAFE_DELETE(XBMC);
-		return ADDON_STATUS_PERMANENT_FAILURE;
-	}
+  XBMC = new CHelper_libXBMC_addon;
+  if (!XBMC->RegisterMe(hdl))
+  {
+    delete XBMC;
+    XBMC = nullptr;
+    return ADDON_STATUS_PERMANENT_FAILURE;
+  }
 
-	PVR = new CHelper_libXBMC_pvr;
-	if (!PVR->RegisterMe(hdl)) {
-		SAFE_DELETE(PVR);
-		SAFE_DELETE(XBMC);
-		return ADDON_STATUS_PERMANENT_FAILURE;
-	}
+  PVR = new CHelper_libXBMC_pvr;
+  if (!PVR->RegisterMe(hdl))
+  {
+    delete PVR;
+    PVR = nullptr;
+    delete XBMC;
+    XBMC = nullptr;
+    return ADDON_STATUS_PERMANENT_FAILURE;
+  }
 
-	XBMC->Log(LOG_DEBUG, "%s - Creating the PVR Filmon add-on", __FUNCTION__);
+  XBMC->Log(LOG_DEBUG, "%s - Creating the PVR Filmon add-on", __FUNCTION__);
 
-	m_CurStatus = ADDON_STATUS_UNKNOWN;
-	g_strUserPath = pvrprops->strUserPath;
-	g_strClientPath = pvrprops->strClientPath;
+  m_CurStatus = ADDON_STATUS_UNKNOWN;
+  g_strUserPath = pvrprops->strUserPath;
+  g_strClientPath = pvrprops->strClientPath;
 
-	ADDON_ReadSettings();
+  ADDON_ReadSettings();
 
-	m_data = new PVRFilmonData;
-	if (m_data->Load(g_strUsername, g_strPassword)) {
-		m_CurStatus = ADDON_STATUS_OK;
-		m_bCreated = true;
-		XBMC->Log(LOG_DEBUG, "%s - Created the PVR Filmon add-on",
-				__FUNCTION__);
-	} else {
-		XBMC->Log(LOG_ERROR, "%s - Failed to connect to Filmon, check settings",
-				__FUNCTION__);
-		m_CurStatus = ADDON_STATUS_LOST_CONNECTION;
-	}
-	return m_CurStatus;
+  m_data = new PVRFilmonData;
+  if (m_data->Load(g_strUsername, g_strPassword))
+  {
+    m_CurStatus = ADDON_STATUS_OK;
+    m_bCreated = true;
+    XBMC->Log(LOG_DEBUG, "%s - Created the PVR Filmon add-on", __FUNCTION__);
+  }
+  else
+  {
+    XBMC->Log(LOG_ERROR, "%s - Failed to connect to Filmon, check settings", __FUNCTION__);
+    m_CurStatus = ADDON_STATUS_LOST_CONNECTION;
+  }
+  return m_CurStatus;
 }
 
-ADDON_STATUS ADDON_GetStatus() {
-	return m_CurStatus;
+ADDON_STATUS ADDON_GetStatus() { return m_CurStatus; }
+
+void ADDON_Destroy()
+{
+  delete m_data;
+  m_bCreated = false;
+  m_CurStatus = ADDON_STATUS_UNKNOWN;
 }
 
-void ADDON_Destroy() {
-	delete m_data;
-	m_bCreated = false;
-	m_CurStatus = ADDON_STATUS_UNKNOWN;
-}
-
-ADDON_STATUS ADDON_SetSetting(const char *settingName,
-		const void *settingValue) {
-	string str = settingName;
-	if (str == "username") {
-		string tmp_sUsername = g_strUsername;
-		g_strUsername = (const char*) settingValue;
-		if (tmp_sUsername != g_strUsername) {
-			XBMC->Log(LOG_INFO, "%s - Changed Setting 'username'",
-					__FUNCTION__);
-			return ADDON_STATUS_NEED_RESTART;
-		}
-	} else if (str == "password") {
-		string tmp_sPassword = g_strPassword;
-		g_strPassword = (const char*) settingValue;
-		if (tmp_sPassword != g_strPassword) {
-			XBMC->Log(LOG_INFO, "%s - Changed Setting 'password'",
-					__FUNCTION__);
-			return ADDON_STATUS_NEED_RESTART;
-		}
-	} else if (str == "preferhd") {
-		bool tmp_boolPreferHd = g_boolPreferHd;
-		g_boolPreferHd = (const char*)settingValue;
-		if (tmp_boolPreferHd != g_boolPreferHd) {
-			XBMC->Log(LOG_INFO, "%s - Changed Setting 'preferhd'",
-					__FUNCTION__);
-			return ADDON_STATUS_NEED_RESTART;
-		}
-	}
-	return ADDON_STATUS_OK;
+ADDON_STATUS ADDON_SetSetting(const char* settingName, const void* settingValue)
+{
+  string str = settingName;
+  if (str == "username")
+  {
+    string tmp_sUsername = g_strUsername;
+    g_strUsername = (const char*)settingValue;
+    if (tmp_sUsername != g_strUsername)
+    {
+      XBMC->Log(LOG_INFO, "%s - Changed Setting 'username'", __FUNCTION__);
+      return ADDON_STATUS_NEED_RESTART;
+    }
+  }
+  else if (str == "password")
+  {
+    string tmp_sPassword = g_strPassword;
+    g_strPassword = (const char*)settingValue;
+    if (tmp_sPassword != g_strPassword)
+    {
+      XBMC->Log(LOG_INFO, "%s - Changed Setting 'password'", __FUNCTION__);
+      return ADDON_STATUS_NEED_RESTART;
+    }
+  }
+  else if (str == "preferhd")
+  {
+    bool tmp_boolPreferHd = g_boolPreferHd;
+    g_boolPreferHd = (const char*)settingValue;
+    if (tmp_boolPreferHd != g_boolPreferHd)
+    {
+      XBMC->Log(LOG_INFO, "%s - Changed Setting 'preferhd'", __FUNCTION__);
+      return ADDON_STATUS_NEED_RESTART;
+    }
+  }
+  return ADDON_STATUS_OK;
 }
 
 /***********************************************************
- * PVR Client AddOn specific public library functions
- ***********************************************************/
+* PVR Client AddOn specific public library functions
+***********************************************************/
 
-void OnSystemSleep() {
-}
+void OnSystemSleep() {}
 
-void OnSystemWake() {
-}
+void OnSystemWake() {}
 
-void OnPowerSavingActivated() {
-}
+void OnPowerSavingActivated() {}
 
-void OnPowerSavingDeactivated() {
-}
+void OnPowerSavingDeactivated() {}
 
-PVR_ERROR GetAddonCapabilities(PVR_ADDON_CAPABILITIES* pCapabilities) {
-	pCapabilities->bSupportsTV = true;
-	pCapabilities->bSupportsEPG = true;
-	pCapabilities->bSupportsRecordings = true;
-	pCapabilities->bSupportsRecordingsUndelete = false;
-	pCapabilities->bSupportsTimers = true;
-	pCapabilities->bSupportsChannelGroups = true;
-	pCapabilities->bSupportsRadio = false;
-	pCapabilities->bHandlesInputStream = false;
-	pCapabilities->bHandlesDemuxing = false;
-	pCapabilities->bSupportsChannelScan = false;
-	pCapabilities->bSupportsLastPlayedPosition = false;
-	pCapabilities->bSupportsRecordingEdl = false;
-	pCapabilities->bSupportsRecordingsRename = false;
-	pCapabilities->bSupportsRecordingsLifetimeChange = false;
-	pCapabilities->bSupportsDescrambleInfo = false;
-
-	XBMC->Log(LOG_DEBUG, "%s - got PVR Filmon capabilities", __FUNCTION__);
-
-	return PVR_ERROR_NO_ERROR;
-}
-
-const char *GetBackendName(void) {
-	static const char *strBackendName = m_data->GetBackendName();
-	XBMC->Log(LOG_DEBUG, "%s - got PVR Filmon backend name; %s", __FUNCTION__,
-			strBackendName);
-	return strBackendName;
-}
-
-const char *GetBackendVersion(void) {
-	static std::string strBackendVersion = m_data->GetBackendVersion();
-	XBMC->Log(LOG_DEBUG, "%s - got PVR Filmon backend version; %s",
-			__FUNCTION__, strBackendVersion.c_str());
-	return strBackendVersion.c_str();
-}
-
-const char *GetConnectionString(void) {
-	static std::string strConnectionString = m_data->GetConnection();
-	return strConnectionString.c_str();
-}
-
-const char *GetBackendHostname(void)
+PVR_ERROR GetAddonCapabilities(PVR_ADDON_CAPABILITIES* pCapabilities)
 {
-	return "";
+  pCapabilities->bSupportsTV = true;
+  pCapabilities->bSupportsEPG = true;
+  pCapabilities->bSupportsRecordings = true;
+  pCapabilities->bSupportsRecordingsUndelete = false;
+  pCapabilities->bSupportsTimers = true;
+  pCapabilities->bSupportsChannelGroups = true;
+  pCapabilities->bSupportsRadio = false;
+  pCapabilities->bHandlesInputStream = false;
+  pCapabilities->bHandlesDemuxing = false;
+  pCapabilities->bSupportsChannelScan = false;
+  pCapabilities->bSupportsLastPlayedPosition = false;
+  pCapabilities->bSupportsRecordingEdl = false;
+  pCapabilities->bSupportsRecordingsRename = false;
+  pCapabilities->bSupportsRecordingsLifetimeChange = false;
+  pCapabilities->bSupportsDescrambleInfo = false;
+
+  XBMC->Log(LOG_DEBUG, "%s - got PVR Filmon capabilities", __FUNCTION__);
+
+  return PVR_ERROR_NO_ERROR;
 }
 
-PVR_ERROR GetDriveSpace(long long *iTotal, long long *iUsed) {
-	m_data->GetDriveSpace(iTotal, iUsed);
-	return PVR_ERROR_NO_ERROR;
-}
-
-PVR_ERROR GetEPGForChannel(ADDON_HANDLE handle, int iChannelUid,
-		time_t iStart, time_t iEnd) {
-	if (m_data) {
-		XBMC->Log(LOG_DEBUG, "%s - getting PVR Filmon EPG", __FUNCTION__);
-		return m_data->GetEPGForChannel(handle, iChannelUid, iStart, iEnd);
-	}
-	XBMC->Log(LOG_DEBUG, "%s - failed getting PVR Filmon EPG", __FUNCTION__);
-	return PVR_ERROR_SERVER_ERROR;
-}
-
-int GetChannelsAmount(void) {
-	if (m_data)
-		return m_data->GetChannelsAmount();
-
-	return -1;
-}
-
-PVR_ERROR GetChannels(ADDON_HANDLE handle, bool bRadio) {
-	if (m_data) {
-		XBMC->Log(LOG_DEBUG, "%s - getting PVR Filmon channels", __FUNCTION__);
-		return m_data->GetChannels(handle, bRadio);
-	}
-	XBMC->Log(LOG_ERROR, "%s - failed getting PVR Filmon channels",
-			__FUNCTION__);
-	return PVR_ERROR_SERVER_ERROR;
-}
-
-int GetChannelGroupsAmount(void) {
-	if (m_data)
-		return m_data->GetChannelGroupsAmount();
-
-	return -1;
-}
-
-PVR_ERROR GetChannelGroups(ADDON_HANDLE handle, bool bRadio) {
-	if (m_data)
-		return m_data->GetChannelGroups(handle, bRadio);
-
-	return PVR_ERROR_SERVER_ERROR;
-}
-
-PVR_ERROR GetChannelGroupMembers(ADDON_HANDLE handle,
-		const PVR_CHANNEL_GROUP &group) {
-	if (m_data)
-		return m_data->GetChannelGroupMembers(handle, group);
-
-	return PVR_ERROR_SERVER_ERROR;
-}
-
-PVR_ERROR SignalStatus(PVR_SIGNAL_STATUS &signalStatus) {
-	snprintf(signalStatus.strAdapterName, sizeof(signalStatus.strAdapterName),
-			"%s", m_data->GetBackendName());
-	snprintf(signalStatus.strAdapterStatus,
-			sizeof(signalStatus.strAdapterStatus), "OK");
-
-	return PVR_ERROR_NO_ERROR;
-}
-
-int GetRecordingsAmount(bool deleted) {
-	if (m_data)
-		return m_data->GetRecordingsAmount();
-
-	return -1;
-}
-
-PVR_ERROR GetRecordings(ADDON_HANDLE handle, bool deleted) {
-	if (m_data)
-		return m_data->GetRecordings(handle);
-
-	return PVR_ERROR_NOT_IMPLEMENTED;
-}
-
-PVR_ERROR DeleteRecording(const PVR_RECORDING &recording) {
-	if (!m_data)
-		return PVR_ERROR_SERVER_ERROR;
-
-	return m_data->DeleteRecording(recording);
-}
-
-PVR_ERROR GetTimerTypes(PVR_TIMER_TYPE types[], int *size)
+const char* GetBackendName(void)
 {
-	/* TODO: Implement this to get support for the timer features introduced with PVR API 1.9.7 */
-	return PVR_ERROR_NOT_IMPLEMENTED;
+  static const char* strBackendName = m_data->GetBackendName();
+  XBMC->Log(LOG_DEBUG, "%s - got PVR Filmon backend name; %s", __FUNCTION__, strBackendName);
+  return strBackendName;
 }
 
-int GetTimersAmount(void) {
-	if (!m_data)
-		return 0;
-
-	return m_data->GetTimersAmount();
+const char* GetBackendVersion(void)
+{
+  static std::string strBackendVersion = m_data->GetBackendVersion();
+  XBMC->Log(LOG_DEBUG, "%s - got PVR Filmon backend version; %s", __FUNCTION__,
+            strBackendVersion.c_str());
+  return strBackendVersion.c_str();
 }
 
-PVR_ERROR GetTimers(ADDON_HANDLE handle) {
-	if (!m_data)
-		return PVR_ERROR_SERVER_ERROR;
-
-	/* TODO: Change implementation to get support for the timer features introduced with PVR API 1.9.7 */
-	return m_data->GetTimers(handle);
+const char* GetConnectionString(void)
+{
+  static std::string strConnectionString = m_data->GetConnection();
+  return strConnectionString.c_str();
 }
 
-PVR_ERROR AddTimer(const PVR_TIMER &timer) {
-	if (!m_data)
-		return PVR_ERROR_SERVER_ERROR;
+const char* GetBackendHostname(void) { return ""; }
 
-	return m_data->AddTimer(timer);
+PVR_ERROR GetDriveSpace(long long* iTotal, long long* iUsed)
+{
+  m_data->GetDriveSpace(iTotal, iUsed);
+  return PVR_ERROR_NO_ERROR;
 }
 
-PVR_ERROR DeleteTimer(const PVR_TIMER &timer, bool bForceDelete) {
-	if (!m_data)
-		return PVR_ERROR_SERVER_ERROR;
-
-	return m_data->DeleteTimer(timer, bForceDelete);
-
+PVR_ERROR GetEPGForChannel(ADDON_HANDLE handle, int iChannelUid, time_t iStart, time_t iEnd)
+{
+  if (m_data)
+  {
+    XBMC->Log(LOG_DEBUG, "%s - getting PVR Filmon EPG", __FUNCTION__);
+    return m_data->GetEPGForChannel(handle, iChannelUid, iStart, iEnd);
+  }
+  XBMC->Log(LOG_DEBUG, "%s - failed getting PVR Filmon EPG", __FUNCTION__);
+  return PVR_ERROR_SERVER_ERROR;
 }
 
-PVR_ERROR UpdateTimer(const PVR_TIMER& timer) {
-	if (!m_data)
-		return PVR_ERROR_SERVER_ERROR;
+int GetChannelsAmount(void)
+{
+  if (m_data)
+    return m_data->GetChannelsAmount();
 
-	return m_data->UpdateTimer(timer);
+  return -1;
 }
 
-PVR_ERROR GetChannelStreamProperties(const PVR_CHANNEL* channel, PVR_NAMED_VALUE* properties, unsigned int* iPropertiesCount) {
+PVR_ERROR GetChannels(ADDON_HANDLE handle, bool bRadio)
+{
+  if (m_data)
+  {
+    XBMC->Log(LOG_DEBUG, "%s - getting PVR Filmon channels", __FUNCTION__);
+    return m_data->GetChannels(handle, bRadio);
+  }
+  XBMC->Log(LOG_ERROR, "%s - failed getting PVR Filmon channels", __FUNCTION__);
+  return PVR_ERROR_SERVER_ERROR;
+}
+
+int GetChannelGroupsAmount(void)
+{
+  if (m_data)
+    return m_data->GetChannelGroupsAmount();
+
+  return -1;
+}
+
+PVR_ERROR GetChannelGroups(ADDON_HANDLE handle, bool bRadio)
+{
+  if (m_data)
+    return m_data->GetChannelGroups(handle, bRadio);
+
+  return PVR_ERROR_SERVER_ERROR;
+}
+
+PVR_ERROR GetChannelGroupMembers(ADDON_HANDLE handle, const PVR_CHANNEL_GROUP& group)
+{
+  if (m_data)
+    return m_data->GetChannelGroupMembers(handle, group);
+
+  return PVR_ERROR_SERVER_ERROR;
+}
+
+PVR_ERROR SignalStatus(PVR_SIGNAL_STATUS& signalStatus)
+{
+  snprintf(signalStatus.strAdapterName, sizeof(signalStatus.strAdapterName), "%s",
+            m_data->GetBackendName());
+  snprintf(signalStatus.strAdapterStatus, sizeof(signalStatus.strAdapterStatus), "OK");
+
+  return PVR_ERROR_NO_ERROR;
+}
+
+int GetRecordingsAmount(bool deleted)
+{
+  if (m_data)
+    return m_data->GetRecordingsAmount();
+
+  return -1;
+}
+
+PVR_ERROR GetRecordings(ADDON_HANDLE handle, bool deleted)
+{
+  if (m_data)
+    return m_data->GetRecordings(handle);
+
+  return PVR_ERROR_NOT_IMPLEMENTED;
+}
+
+PVR_ERROR DeleteRecording(const PVR_RECORDING& recording)
+{
+  if (!m_data)
+    return PVR_ERROR_SERVER_ERROR;
+
+  return m_data->DeleteRecording(recording);
+}
+
+PVR_ERROR GetTimerTypes(PVR_TIMER_TYPE types[], int* size)
+{
+  /* TODO: Implement this to get support for the timer features introduced with
+  * PVR API 1.9.7 */
+  return PVR_ERROR_NOT_IMPLEMENTED;
+}
+
+int GetTimersAmount(void)
+{
+  if (!m_data)
+    return 0;
+
+  return m_data->GetTimersAmount();
+}
+
+PVR_ERROR GetTimers(ADDON_HANDLE handle)
+{
+  if (!m_data)
+    return PVR_ERROR_SERVER_ERROR;
+
+  /* TODO: Change implementation to get support for the timer features
+  * introduced with PVR API 1.9.7 */
+  return m_data->GetTimers(handle);
+}
+
+PVR_ERROR AddTimer(const PVR_TIMER& timer)
+{
+  if (!m_data)
+    return PVR_ERROR_SERVER_ERROR;
+
+  return m_data->AddTimer(timer);
+}
+
+PVR_ERROR DeleteTimer(const PVR_TIMER& timer, bool bForceDelete)
+{
+  if (!m_data)
+    return PVR_ERROR_SERVER_ERROR;
+
+  return m_data->DeleteTimer(timer, bForceDelete);
+}
+
+PVR_ERROR UpdateTimer(const PVR_TIMER& timer)
+{
+  if (!m_data)
+    return PVR_ERROR_SERVER_ERROR;
+
+  return m_data->UpdateTimer(timer);
+}
+
+PVR_ERROR GetChannelStreamProperties(const PVR_CHANNEL* channel,
+                                      PVR_NAMED_VALUE* properties,
+                                      unsigned int* iPropertiesCount)
+{
   if (!m_data)
     return PVR_ERROR_SERVER_ERROR;
 
   return m_data->GetChannelStreamProperties(channel, properties, iPropertiesCount);
 }
 
-PVR_ERROR GetRecordingStreamProperties(const PVR_RECORDING* recording, PVR_NAMED_VALUE* properties, unsigned int* iPropertiesCount) {
+PVR_ERROR GetRecordingStreamProperties(const PVR_RECORDING* recording,
+                                        PVR_NAMED_VALUE* properties,
+                                        unsigned int* iPropertiesCount)
+{
   if (!m_data)
     return PVR_ERROR_SERVER_ERROR;
 
@@ -363,137 +392,83 @@ PVR_ERROR GetRecordingStreamProperties(const PVR_RECORDING* recording, PVR_NAMED
 }
 
 /** UNUSED API FUNCTIONS */
-PVR_ERROR OpenDialogChannelScan(void) {
-	return PVR_ERROR_NOT_IMPLEMENTED;
-}
-PVR_ERROR CallMenuHook(const PVR_MENUHOOK &menuhook,
-		const PVR_MENUHOOK_DATA &item) {
-	return PVR_ERROR_NOT_IMPLEMENTED;
-}
-PVR_ERROR DeleteChannel(const PVR_CHANNEL &channel) {
-	return PVR_ERROR_NOT_IMPLEMENTED;
-}
-PVR_ERROR RenameChannel(const PVR_CHANNEL &channel) {
-	return PVR_ERROR_NOT_IMPLEMENTED;
-}
-PVR_ERROR OpenDialogChannelSettings(const PVR_CHANNEL &channel) {
-	return PVR_ERROR_NOT_IMPLEMENTED;
-}
-PVR_ERROR OpenDialogChannelAdd(const PVR_CHANNEL &channel) {
-	return PVR_ERROR_NOT_IMPLEMENTED;
-}
-bool OpenRecordedStream(const PVR_RECORDING &recording) {
-	return false;
-}
-bool OpenLiveStream(const PVR_CHANNEL& channel) {
-	return false;
-}
-void CloseLiveStream(void) {
-}
-void CloseRecordedStream(void) {
-}
-int ReadRecordedStream(unsigned char *pBuffer, unsigned int iBufferSize) {
-	return 0;
-}
-long long SeekRecordedStream(long long iPosition,
-		int iWhence /* = SEEK_SET */) {
-	return 0;
-}
-long long LengthRecordedStream(void) {
-	return 0;
-}
-PVR_ERROR GetStreamProperties(PVR_STREAM_PROPERTIES* pProperties) {
-	return PVR_ERROR_NOT_IMPLEMENTED;
-}
-PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *times) {
-  return PVR_ERROR_NOT_IMPLEMENTED;
-}
-void DemuxReset(void) {
-}
-void DemuxFlush(void) {
-}
-int ReadLiveStream(unsigned char *pBuffer, unsigned int iBufferSize) {
-	return 0;
-}
-long long SeekLiveStream(long long iPosition, int iWhence /* = SEEK_SET */) {
-	return -1;
-}
-long long LengthLiveStream(void) {
-	return -1;
-}
-PVR_ERROR RenameRecording(const PVR_RECORDING &recording) {
-	return PVR_ERROR_NOT_IMPLEMENTED;
-}
-PVR_ERROR SetRecordingPlayCount(const PVR_RECORDING &recording, int count) {
-	return PVR_ERROR_NOT_IMPLEMENTED;
-}
-PVR_ERROR SetRecordingLastPlayedPosition(const PVR_RECORDING &recording,
-		int lastplayedposition) {
-	return PVR_ERROR_NOT_IMPLEMENTED;
-}
-int GetRecordingLastPlayedPosition(const PVR_RECORDING &recording) {
-	return -1;
-}
-PVR_ERROR GetRecordingEdl(const PVR_RECORDING&, PVR_EDL_ENTRY[], int*) {
-	return PVR_ERROR_NOT_IMPLEMENTED;
-}
-void DemuxAbort(void) {
-}
-DemuxPacket* DemuxRead(void) {
-	return NULL;
-}
-void FillBuffer(bool mode)
+PVR_ERROR OpenDialogChannelScan(void) { return PVR_ERROR_NOT_IMPLEMENTED; }
+PVR_ERROR CallMenuHook(const PVR_MENUHOOK& menuhook, const PVR_MENUHOOK_DATA& item)
 {
-}
-void PauseStream(bool bPaused) {
-}
-bool CanPauseStream(void) {
-	return true;
-}
-bool CanSeekStream(void) {
-	return true;
-}
-bool SeekTime(double time, bool backwards, double *startpts) {
-	if (backwards) {
-		return true;
-	} else {
-		return false;
-	}
-}
-void SetSpeed(int) {
-}
-bool IsRealTimeStream() {
-	return true;
-}
-PVR_ERROR UndeleteRecording(const PVR_RECORDING& recording) {
-	return PVR_ERROR_NOT_IMPLEMENTED;
-}
-PVR_ERROR DeleteAllRecordingsFromTrash() {
-	return PVR_ERROR_NOT_IMPLEMENTED;
-}
-PVR_ERROR SetEPGTimeFrame(int) {
-	return PVR_ERROR_NOT_IMPLEMENTED;
-}
-PVR_ERROR GetDescrambleInfo(PVR_DESCRAMBLE_INFO*) {
-	return PVR_ERROR_NOT_IMPLEMENTED;
-}
-PVR_ERROR SetRecordingLifetime(const PVR_RECORDING*) {
-	return PVR_ERROR_NOT_IMPLEMENTED;
-}
-PVR_ERROR IsEPGTagPlayable(const EPG_TAG*, bool*) {
   return PVR_ERROR_NOT_IMPLEMENTED;
 }
-PVR_ERROR IsEPGTagRecordable(const EPG_TAG*, bool*) {
+PVR_ERROR DeleteChannel(const PVR_CHANNEL& channel) { return PVR_ERROR_NOT_IMPLEMENTED; }
+PVR_ERROR RenameChannel(const PVR_CHANNEL& channel) { return PVR_ERROR_NOT_IMPLEMENTED; }
+PVR_ERROR OpenDialogChannelSettings(const PVR_CHANNEL& channel)
+{
   return PVR_ERROR_NOT_IMPLEMENTED;
 }
-PVR_ERROR GetEPGTagStreamProperties(const EPG_TAG*, PVR_NAMED_VALUE*, unsigned int*) {
+PVR_ERROR OpenDialogChannelAdd(const PVR_CHANNEL& channel) { return PVR_ERROR_NOT_IMPLEMENTED; }
+bool OpenRecordedStream(const PVR_RECORDING& recording) { return false; }
+bool OpenLiveStream(const PVR_CHANNEL& channel) { return false; }
+void CloseLiveStream(void) {}
+void CloseRecordedStream(void) {}
+int ReadRecordedStream(unsigned char* pBuffer, unsigned int iBufferSize) { return 0; }
+long long SeekRecordedStream(long long iPosition, int iWhence /* = SEEK_SET */) { return 0; }
+long long LengthRecordedStream(void) { return 0; }
+PVR_ERROR GetStreamProperties(PVR_STREAM_PROPERTIES* pProperties)
+{
   return PVR_ERROR_NOT_IMPLEMENTED;
 }
-PVR_ERROR GetEPGTagEdl(const EPG_TAG* epgTag, PVR_EDL_ENTRY edl[], int *size) {
+PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES* times) { return PVR_ERROR_NOT_IMPLEMENTED; }
+void DemuxReset(void) {}
+void DemuxFlush(void) {}
+int ReadLiveStream(unsigned char* pBuffer, unsigned int iBufferSize) { return 0; }
+long long SeekLiveStream(long long iPosition, int iWhence /* = SEEK_SET */) { return -1; }
+long long LengthLiveStream(void) { return -1; }
+PVR_ERROR RenameRecording(const PVR_RECORDING& recording) { return PVR_ERROR_NOT_IMPLEMENTED; }
+PVR_ERROR SetRecordingPlayCount(const PVR_RECORDING& recording, int count)
+{
   return PVR_ERROR_NOT_IMPLEMENTED;
 }
-PVR_ERROR GetStreamReadChunkSize(int* chunksize) {
+PVR_ERROR SetRecordingLastPlayedPosition(const PVR_RECORDING& recording, int lastplayedposition)
+{
   return PVR_ERROR_NOT_IMPLEMENTED;
 }
+int GetRecordingLastPlayedPosition(const PVR_RECORDING& recording) { return -1; }
+PVR_ERROR GetRecordingEdl(const PVR_RECORDING&, PVR_EDL_ENTRY[], int*)
+{
+  return PVR_ERROR_NOT_IMPLEMENTED;
+}
+void DemuxAbort(void) {}
+DemuxPacket* DemuxRead(void) { return nullptr; }
+void FillBuffer(bool mode) {}
+void PauseStream(bool bPaused) {}
+bool CanPauseStream(void) { return true; }
+bool CanSeekStream(void) { return true; }
+bool SeekTime(double time, bool backwards, double* startpts)
+{
+  if (backwards)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+void SetSpeed(int) {}
+bool IsRealTimeStream() { return true; }
+PVR_ERROR UndeleteRecording(const PVR_RECORDING& recording) { return PVR_ERROR_NOT_IMPLEMENTED; }
+PVR_ERROR DeleteAllRecordingsFromTrash() { return PVR_ERROR_NOT_IMPLEMENTED; }
+PVR_ERROR SetEPGTimeFrame(int) { return PVR_ERROR_NOT_IMPLEMENTED; }
+PVR_ERROR GetDescrambleInfo(PVR_DESCRAMBLE_INFO*) { return PVR_ERROR_NOT_IMPLEMENTED; }
+PVR_ERROR SetRecordingLifetime(const PVR_RECORDING*) { return PVR_ERROR_NOT_IMPLEMENTED; }
+PVR_ERROR IsEPGTagPlayable(const EPG_TAG*, bool*) { return PVR_ERROR_NOT_IMPLEMENTED; }
+PVR_ERROR IsEPGTagRecordable(const EPG_TAG*, bool*) { return PVR_ERROR_NOT_IMPLEMENTED; }
+PVR_ERROR GetEPGTagStreamProperties(const EPG_TAG*, PVR_NAMED_VALUE*, unsigned int*)
+{
+  return PVR_ERROR_NOT_IMPLEMENTED;
+}
+PVR_ERROR GetEPGTagEdl(const EPG_TAG* epgTag, PVR_EDL_ENTRY edl[], int* size)
+{
+  return PVR_ERROR_NOT_IMPLEMENTED;
+}
+PVR_ERROR GetStreamReadChunkSize(int* chunksize) { return PVR_ERROR_NOT_IMPLEMENTED; }
 
-}
+} /* extern "C" */
