@@ -1,3 +1,6 @@
+3.2.1
+- Update PVR API 6.3.0
+
 3.2.0
 - Remove p8-platform usage and do by C++11
 - Major code format cleanups (no working changes)
