@@ -5,7 +5,7 @@
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/5120/badge.svg)](https://scan.coverity.com/projects/5120)
 
 # Filmon PVR
-Filmon PVR client addon for [Kodi] (https://kodi.tv)
+Filmon PVR client addon for [Kodi](https://kodi.tv)
 
 ## Build instructions
 
@@ -23,5 +23,5 @@ Also make sure you follow this README from the branch in question.
 
 ##### Useful links
 
-* [Kodi's PVR user support] (https://forum.kodi.tv/forumdisplay.php?fid=167)
-* [Kodi's PVR development support] (https://forum.kodi.tv/forumdisplay.php?fid=136)
+* [Kodi's PVR user support](https://forum.kodi.tv/forumdisplay.php?fid=167)
+* [Kodi's PVR development support](https://forum.kodi.tv/forumdisplay.php?fid=136)
