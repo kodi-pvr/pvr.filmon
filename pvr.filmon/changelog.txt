@@ -1,3 +1,6 @@
+3.2.3:
+- Update PVR API 6.5.0
+
 3.2.2:
 - Update PVR API 6.4.0
 - Update license name and add forum url on addon.xml
