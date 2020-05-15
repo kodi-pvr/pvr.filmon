@@ -38,6 +38,7 @@ ADDON_STATUS m_CurStatus = ADDON_STATUS_UNKNOWN;
 PVRFilmonData *m_data = NULL;
 bool m_bIsPlaying = false;
 PVRFilmonChannel m_currentChannel;
+bool m_bRecordingPlayback = false;
 
 /* User adjustable settings are saved here.
  * Default values are defined inside client.h
@@ -352,12 +353,16 @@ PVR_ERROR GetChannelStreamProperties(const PVR_CHANNEL* channel, PVR_NAMED_VALUE
   if (!m_data)
     return PVR_ERROR_SERVER_ERROR;
 
+  m_bRecordingPlayback = false;
+
   return m_data->GetChannelStreamProperties(channel, properties, iPropertiesCount);
 }
 
 PVR_ERROR GetRecordingStreamProperties(const PVR_RECORDING* recording, PVR_NAMED_VALUE* properties, unsigned int* iPropertiesCount) {
   if (!m_data)
     return PVR_ERROR_SERVER_ERROR;
+
+  m_bRecordingPlayback = true;
 
   return m_data->GetRecordingStreamProperties(recording, properties, iPropertiesCount);
 }
@@ -463,8 +468,8 @@ bool SeekTime(double time, bool backwards, double *startpts) {
 }
 void SetSpeed(int) {
 }
-bool IsRealTimeStream() {
-	return true;
+bool IsRealTimeStream() { 
+  return !m_bRecordingPlayback; 
 }
 PVR_ERROR UndeleteRecording(const PVR_RECORDING& recording) {
 	return PVR_ERROR_NOT_IMPLEMENTED;
