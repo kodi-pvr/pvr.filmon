@@ -10,7 +10,6 @@
 
 #include "FilmonAPI.h"
 
-#include "client.h"
 #include "md5.h"
 
 #include <algorithm>
@@ -22,22 +21,18 @@
 #include <thread>
 #include <vector>
 
+#include <kodi/Filesystem.h>
+#include <kodi/addon-instance/PVR.h>
 #include <json/json.h>
 
 #define FILMON_URL "http://www.filmon.com/"
 #define FILMON_ONE_HOUR_RECORDING_SIZE 508831234
-#define REQUEST_RETRIES 4
 #define REQUEST_RETRY_TIMEOUT 500000 // 0.5s
 #define RESPONSE_OUTPUT_LENGTH 128
 
 #define RECORDED_STATUS "Recorded"
 #define TIMER_STATUS "Accepted"
 #define OFF_AIR "Off Air"
-
-/* open without caching. regardless to file type. */
-#define READ_NO_CACHE 0x08
-
-using namespace ADDON;
 
 // Attempt at genres
 typedef struct
@@ -66,49 +61,15 @@ static genreEntry genreTable[] = {
 
 #define GENRE_TABLE_LEN sizeof(genreTable) / sizeof(genreTable[0])
 
-bool filmonRequest(std::string path,
-                   std::string params = "",
-                   unsigned int retries = REQUEST_RETRIES);
-bool filmonAPIgetRecordingsTimers(bool completed = false);
-
-std::string filmonUsername = "";
-std::string filmonpassword = "";
-std::string sessionKeyParam = "";
-std::string swfPlayer = "";
-
-long long storageUsed = 0;
-long long storageTotal = 0;
-
-std::vector<unsigned int> channelList;
-std::vector<FILMON_CHANNEL_GROUP> groups;
-std::vector<FILMON_RECORDING> recordings;
-std::vector<FILMON_TIMER> timers;
-
-bool connected = false;
-
-std::string response;
-
-std::string intToString(unsigned int i)
-{
-  std::ostringstream oss;
-  oss << i;
-  return oss.str();
-}
-
-unsigned int stringToInt(std::string s)
-{
-  return atoi(s.c_str());
-}
-
-std::string timeToHourMin(unsigned int t)
+std::string PVRFilmonAPI::timeToHourMin(unsigned int t)
 {
   time_t tt = (time_t)t;
   tm* gmtm = gmtime(&tt);
-  return intToString(gmtm->tm_hour) + intToString(gmtm->tm_min);
+  return std::to_string(gmtm->tm_hour) + std::to_string(gmtm->tm_min);
 }
 
 // Timer settings not supported in Filmon
-void setTimerDefaults(FILMON_TIMER* t)
+void PVRFilmonAPI::setTimerDefaults(FILMON_TIMER* t)
 {
   t->bIsRepeating = false;
   t->firstDay = 0;
@@ -121,26 +82,26 @@ void setTimerDefaults(FILMON_TIMER* t)
 }
 
 // Free response
-void clearResponse()
+void PVRFilmonAPI::clearResponse()
 {
   response.clear();
 }
 
 // Initialize connection
-bool filmonAPICreate(void)
+bool PVRFilmonAPI::filmonAPICreate(void)
 {
   connected = true;
   return connected;
 }
 
 // Remove connection
-void filmonAPIDelete(void)
+void PVRFilmonAPI::filmonAPIDelete(void)
 {
   connected = false;
 }
 
 // Connection URL
-std::string filmonAPIConnection()
+std::string PVRFilmonAPI::filmonAPIConnection()
 {
   if (connected)
   {
@@ -153,7 +114,7 @@ std::string filmonAPIConnection()
 }
 
 // Make a request
-bool filmonRequest(std::string path, std::string params, unsigned int retries)
+bool PVRFilmonAPI::filmonRequest(std::string path, std::string params, unsigned int retries)
 {
   std::string request = FILMON_URL;
 
@@ -168,22 +129,23 @@ bool filmonRequest(std::string path, std::string params, unsigned int retries)
   // Allow request retries
   do
   {
-    XBMC->Log(LOG_DEBUG, "request is %s", request.c_str());
-    void* fileHandle = XBMC->OpenFile(request.c_str(), READ_NO_CACHE);
-    if (!fileHandle)
+    kodi::Log(ADDON_LOG_DEBUG, "request is %s", request.c_str());
+    kodi::vfs::CFile fileHandle;
+    if (!fileHandle.OpenFile(request, ADDON_READ_NO_CACHE))
     {
-      XBMC->Log(LOG_ERROR, "request failure");
+      kodi::Log(ADDON_LOG_ERROR, "request failure");
+      m_client.ConnectionStateChange(request, PVR_CONNECTION_STATE_SERVER_UNREACHABLE, "");
       clearResponse();
       std::this_thread::sleep_for(std::chrono::microseconds(REQUEST_RETRY_TIMEOUT));
     }
     else
     {
+      m_client.ConnectionStateChange(request, PVR_CONNECTION_STATE_CONNECTED, "");
       char buffer[4096];
-      while (int read = XBMC->ReadFile(fileHandle, buffer, 4096))
+      while (int read = fileHandle.Read(buffer, 4096))
         response.append(buffer, read);
-      XBMC->CloseFile(fileHandle);
 
-      XBMC->Log(LOG_DEBUG, "response is %s", response.substr(0, RESPONSE_OUTPUT_LENGTH).c_str());
+      kodi::Log(ADDON_LOG_DEBUG, "response is %s", response.substr(0, RESPONSE_OUTPUT_LENGTH).c_str());
     }
   } while (response.empty() && --retries > 0);
 
@@ -200,7 +162,7 @@ bool filmonRequest(std::string path, std::string params, unsigned int retries)
 }
 
 // Logout user
-void filmonAPIlogout(void)
+void PVRFilmonAPI::filmonAPIlogout(void)
 {
   bool res = filmonRequest("tv/api/logout");
   if (res == true)
@@ -210,7 +172,7 @@ void filmonAPIlogout(void)
 }
 
 // Keepalive
-bool filmonAPIkeepAlive(void)
+bool PVRFilmonAPI::filmonAPIkeepAlive(void)
 {
   bool res = filmonRequest("tv/api/keep-alive", sessionKeyParam);
   if (!res)
@@ -227,7 +189,7 @@ bool filmonAPIkeepAlive(void)
 }
 
 // Session
-bool filmonAPIgetSessionKey(void)
+bool PVRFilmonAPI::filmonAPIgetSessionKey(void)
 {
   bool res =
       filmonRequest("tv/api/"
@@ -245,20 +207,20 @@ bool filmonAPIgetSessionKey(void)
     Json::Value sessionKey = root["session_key"];
     sessionKeyParam = "session_key=";
     sessionKeyParam.append(sessionKey.asString());
-    XBMC->Log(LOG_DEBUG, "got session key %s", sessionKey.asString().c_str());
+    kodi::Log(ADDON_LOG_DEBUG, "got session key %s", sessionKey.asString().c_str());
     clearResponse();
   }
   return res;
 }
 
 // Login subscriber
-bool filmonAPIlogin(std::string username, std::string password)
+bool PVRFilmonAPI::filmonAPIlogin(std::string username, std::string password)
 {
 
   bool res = filmonAPIgetSessionKey();
   if (res)
   {
-    XBMC->Log(LOG_DEBUG, "logging in user");
+    kodi::Log(ADDON_LOG_DEBUG, "logging in user");
     filmonUsername = username;
     filmonpassword = password;
 
@@ -282,7 +244,7 @@ bool filmonAPIlogin(std::string username, std::string password)
       {
         Json::Value chId = favouriteChannels[channel]["channel"]["id"];
         channelList.push_back(chId.asUInt());
-        XBMC->Log(LOG_INFO, "added channel %u", chId.asUInt());
+        kodi::Log(ADDON_LOG_INFO, "added channel %u", chId.asUInt());
       }
       clearResponse();
     }
@@ -291,7 +253,7 @@ bool filmonAPIlogin(std::string username, std::string password)
 }
 
 // SWF player URL
-void filmonAPIgetswfPlayer()
+void PVRFilmonAPI::filmonAPIgetswfPlayer()
 {
   swfPlayer = std::string("/tv/modules/FilmOnTV/files/flashapp/filmon/FilmonPlayer.swf?v=56");
   bool res = filmonRequest("tv/", "");
@@ -320,15 +282,15 @@ void filmonAPIgetswfPlayer()
     {
       Json::Value streamer = root["streamer"];
       swfPlayer = streamer.asString();
-      XBMC->Log(LOG_DEBUG, "parsed flash config %s", swfPlayer.c_str());
+      kodi::Log(ADDON_LOG_DEBUG, "parsed flash config %s", swfPlayer.c_str());
     }
     clearResponse();
   }
   swfPlayer = std::string("http://www.filmon.com") + swfPlayer;
-  XBMC->Log(LOG_INFO, "swfPlayer is %s", swfPlayer.c_str());
+  kodi::Log(ADDON_LOG_INFO, "swfPlayer is %s", swfPlayer.c_str());
 }
 
-int filmonAPIgetGenre(std::string group)
+int PVRFilmonAPI::filmonAPIgetGenre(std::string group)
 {
   for (unsigned int i = 0; i < GENRE_TABLE_LEN; i++)
   {
@@ -341,7 +303,7 @@ int filmonAPIgetGenre(std::string group)
 }
 
 // Channel stream (RTMP)
-std::string filmonAPIgetRtmpStream(std::string url, std::string name)
+std::string PVRFilmonAPI::filmonAPIgetRtmpStream(std::string url, std::string name)
 {
   char urlDelimiter = '/';
   std::vector<std::string> streamElements;
@@ -364,15 +326,15 @@ std::string filmonAPIgetRtmpStream(std::string url, std::string name)
   }
   else
   {
-    XBMC->Log(LOG_ERROR, "no stream available");
+    kodi::Log(ADDON_LOG_ERROR, "no stream available");
     return std::string("");
   }
 }
 
 // Channel
-bool filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL* channel)
+bool PVRFilmonAPI::filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL* channel, bool preferHd)
 {
-  bool res = filmonRequest("tv/api/channel/" + intToString(channelId), sessionKeyParam);
+  bool res = filmonRequest("tv/api/channel/" + std::to_string(channelId), sessionKeyParam);
   if (res == true)
   {
     Json::Value root;
@@ -391,31 +353,31 @@ bool filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL* channel)
     for (stream = 0; stream < streamCount; stream++)
     {
       std::string quality = streams[stream]["quality"].asString();
-      if (g_boolPreferHd == true)
+      if (preferHd == true)
       {
-        XBMC->Log(LOG_DEBUG, "Prefer high quality stream");
+        kodi::Log(ADDON_LOG_DEBUG, "Prefer high quality stream");
         if (quality.compare(std::string("high")) == 0 ||
             quality.compare(std::string("480p")) == 0 || quality.compare(std::string("HD")) == 0)
         {
-          XBMC->Log(LOG_DEBUG, "high quality stream found: %s", quality.c_str());
+          kodi::Log(ADDON_LOG_DEBUG, "high quality stream found: %s", quality.c_str());
           break;
         }
         else
         {
-          XBMC->Log(LOG_DEBUG, "low quality stream found: %s", quality.c_str());
+          kodi::Log(ADDON_LOG_DEBUG, "low quality stream found: %s", quality.c_str());
         }
       }
       else
       {
-        XBMC->Log(LOG_DEBUG, "Prefer low quality stream");
+        kodi::Log(ADDON_LOG_DEBUG, "Prefer low quality stream");
         if (quality.compare(std::string("high")) == 0 ||
             quality.compare(std::string("480p")) == 0 || quality.compare(std::string("HD")) == 0)
         {
-          XBMC->Log(LOG_DEBUG, "high quality stream found: %s", quality.c_str());
+          kodi::Log(ADDON_LOG_DEBUG, "high quality stream found: %s", quality.c_str());
         }
         else
         {
-          XBMC->Log(LOG_DEBUG, "low quality stream found: %s", quality.c_str());
+          kodi::Log(ADDON_LOG_DEBUG, "low quality stream found: %s", quality.c_str());
           break;
         }
       }
@@ -426,11 +388,11 @@ bool filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL* channel)
     if (streamURL.find("rtmp://") == 0)
     {
       streamURL = filmonAPIgetRtmpStream(streamURL, streams[stream]["name"].asString());
-      XBMC->Log(LOG_DEBUG, "RTMP stream available: %s", streamURL.c_str());
+      kodi::Log(ADDON_LOG_DEBUG, "RTMP stream available: %s", streamURL.c_str());
     }
     else
     {
-      XBMC->Log(LOG_DEBUG, "HLS stream available: %s", streamURL.c_str());
+      kodi::Log(ADDON_LOG_DEBUG, "HLS stream available: %s", streamURL.c_str());
     }
 
     // Fix channel names logos
@@ -445,7 +407,7 @@ bool filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL* channel)
       iconPath = std::string("https://dl.dropboxusercontent.com/u/3129606/"
                              "tvicons/BBC%20THREE.png");
     }
-    XBMC->Log(LOG_DEBUG, "title is %s", chTitle.c_str());
+    kodi::Log(ADDON_LOG_DEBUG, "title is %s", chTitle.c_str());
 
     channel->bRadio = false;
     channel->iUniqueId = channelId;
@@ -457,11 +419,11 @@ bool filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL* channel)
     (channel->epg).clear();
     clearResponse();
 
-    bool res = filmonRequest("tv/api/tvguide/" + intToString(channelId));
+    bool res = filmonRequest("tv/api/tvguide/" + std::to_string(channelId));
     if (res == true)
     {
       // Get EPG
-      XBMC->Log(LOG_DEBUG, "building EPG");
+      kodi::Log(ADDON_LOG_DEBUG, "building EPG");
       jsonReaderError = "";
       reader->parse(response.c_str(), response.c_str() + response.size(), &root, &jsonReaderError);
       unsigned int entries = 0;
@@ -480,7 +442,7 @@ bool filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL* channel)
         if (programmeId.compare(offAir) != 0)
         {
           epgEntry.strTitle = programmeName.asString();
-          epgEntry.iBroadcastId = stringToInt(programmeId);
+          epgEntry.iBroadcastId = std::stoul(programmeId);
           if (plot.isNull() != true)
           {
             epgEntry.strPlot = plot.asString();
@@ -505,8 +467,8 @@ bool filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL* channel)
         epgEntry.iChannelId = channelId;
         if (startTime.isString())
         {
-          epgEntry.startTime = stringToInt(startTime.asString());
-          epgEntry.endTime = stringToInt(endTime.asString());
+          epgEntry.startTime = std::stoi(startTime.asString());
+          epgEntry.endTime = std::stoi(endTime.asString());
         }
         else
         {
@@ -519,7 +481,7 @@ bool filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL* channel)
         (channel->epg).push_back(epgEntry);
         entries++;
       }
-      XBMC->Log(LOG_DEBUG, "number of EPG entries is %u", entries);
+      kodi::Log(ADDON_LOG_DEBUG, "number of EPG entries is %u", entries);
       clearResponse();
     }
   }
@@ -527,7 +489,7 @@ bool filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL* channel)
 }
 
 // Channel groups
-std::vector<FILMON_CHANNEL_GROUP> filmonAPIgetChannelGroups()
+std::vector<FILMON_CHANNEL_GROUP> PVRFilmonAPI::filmonAPIgetChannelGroups()
 {
   bool res = filmonRequest("tv/api/groups", sessionKeyParam);
   if (res == true)
@@ -544,25 +506,25 @@ std::vector<FILMON_CHANNEL_GROUP> filmonAPIgetChannelGroups()
       Json::Value channels = root[i]["channels"];
       FILMON_CHANNEL_GROUP group;
       group.bRadio = false;
-      group.iGroupId = stringToInt(groupId.asString());
+      group.iGroupId = std::stoi(groupId.asString());
       group.strGroupName = groupName.asString();
       std::vector<unsigned int> members;
       unsigned int membersCount = channels.size();
       for (unsigned int j = 0; j < membersCount; j++)
       {
         Json::Value member = channels[j];
-        unsigned int ch = stringToInt(member.asString());
+        unsigned int ch = std::stoul(member.asString());
         if (std::find(channelList.begin(), channelList.end(), ch) != channelList.end())
         {
           members.push_back(ch);
-          XBMC->Log(LOG_INFO, "added channel %u to group %s", ch, group.strGroupName.c_str());
+          kodi::Log(ADDON_LOG_INFO, "added channel %u to group %s", ch, group.strGroupName.c_str());
         }
       }
       if (members.size() > 0)
       {
         group.members = members;
         groups.push_back(group);
-        XBMC->Log(LOG_INFO, "added group %s", group.strGroupName.c_str());
+        kodi::Log(ADDON_LOG_INFO, "added group %s", group.strGroupName.c_str());
       }
     }
     clearResponse();
@@ -571,13 +533,13 @@ std::vector<FILMON_CHANNEL_GROUP> filmonAPIgetChannelGroups()
 }
 
 // The list of subscriber channels
-std::vector<unsigned int> filmonAPIgetChannels(void)
+std::vector<unsigned int> PVRFilmonAPI::filmonAPIgetChannels(void)
 {
   return channelList;
 }
 
 // The count of subscriber channels
-unsigned int filmonAPIgetChannelCount(void)
+unsigned int PVRFilmonAPI::filmonAPIgetChannelCount(void)
 {
   if (channelList.empty())
   {
@@ -588,7 +550,7 @@ unsigned int filmonAPIgetChannelCount(void)
 }
 
 // Gets all timers and recordings
-bool filmonAPIgetRecordingsTimers(bool completed)
+bool PVRFilmonAPI::filmonAPIgetRecordingsTimers(bool completed)
 {
   bool res = filmonRequest("tv/api/dvr/list", sessionKeyParam);
   if (res == true)
@@ -604,8 +566,8 @@ bool filmonAPIgetRecordingsTimers(bool completed)
     Json::Value used = root["userStorage"]["recorded"];
     storageTotal = (long long int)(total.asDouble() * FILMON_ONE_HOUR_RECORDING_SIZE); // bytes
     storageUsed = (long long int)(used.asDouble() * FILMON_ONE_HOUR_RECORDING_SIZE); // bytes
-    XBMC->Log(LOG_DEBUG, "recordings total is %u", storageTotal);
-    XBMC->Log(LOG_DEBUG, "recordings used is %u", storageUsed);
+    kodi::Log(ADDON_LOG_DEBUG, "recordings total is %u", storageTotal);
+    kodi::Log(ADDON_LOG_DEBUG, "recordings used is %u", storageUsed);
 
     bool timersCleared = false;
     bool recordingsCleared = false;
@@ -616,8 +578,8 @@ bool filmonAPIgetRecordingsTimers(bool completed)
       std::string recTimId = recordingsTimers[recordingId]["id"].asString();
       std::string recTimTitle = recordingsTimers[recordingId]["title"].asString();
       unsigned int recTimStart =
-          stringToInt(recordingsTimers[recordingId]["time_start"].asString());
-      unsigned int recDuration = stringToInt(recordingsTimers[recordingId]["length"].asString());
+          std::stoul(recordingsTimers[recordingId]["time_start"].asString());
+      unsigned int recDuration = std::stoul(recordingsTimers[recordingId]["length"].asString());
 
       Json::Value status = recordingsTimers[recordingId]["status"];
       if (completed && status.asString().compare(std::string(RECORDED_STATUS)) == 0)
@@ -638,7 +600,7 @@ bool filmonAPIgetRecordingsTimers(bool completed)
         recording.strThumbnailPath = recordingsTimers[recordingId]["images"]["poster"].asString();
 
         recordings.push_back(recording);
-        XBMC->Log(LOG_DEBUG, "found completed recording %s", recording.strTitle.c_str());
+        kodi::Log(ADDON_LOG_DEBUG, "found completed recording %s", recording.strTitle.c_str());
       }
       else if (status.asString().compare(std::string(TIMER_STATUS)) == 0)
       {
@@ -649,9 +611,9 @@ bool filmonAPIgetRecordingsTimers(bool completed)
         }
 
         FILMON_TIMER timer;
-        timer.iClientIndex = stringToInt(recTimId);
+        timer.iClientIndex = std::stoul(recTimId);
         timer.iClientChannelUid =
-            stringToInt(recordingsTimers[recordingId]["channel_id"].asString());
+            std::stoi(recordingsTimers[recordingId]["channel_id"].asString());
         timer.startTime = recTimStart;
         timer.endTime = timer.startTime + recDuration;
         timer.strTitle = recTimTitle;
@@ -661,17 +623,17 @@ bool filmonAPIgetRecordingsTimers(bool completed)
         time_t t = time(0);
         if (t >= timer.startTime && t <= timer.endTime)
         {
-          XBMC->Log(LOG_DEBUG, "found active timer %s", timer.strTitle.c_str());
+          kodi::Log(ADDON_LOG_DEBUG, "found active timer %s", timer.strTitle.c_str());
           timer.state = FILMON_TIMER_STATE_RECORDING;
         }
         else if (t < timer.startTime)
         {
-          XBMC->Log(LOG_DEBUG, "found scheduled timer %s", timer.strTitle.c_str());
+          kodi::Log(ADDON_LOG_DEBUG, "found scheduled timer %s", timer.strTitle.c_str());
           timer.state = FILMON_TIMER_STATE_SCHEDULED;
         }
         else if (t > timer.endTime)
         {
-          XBMC->Log(LOG_DEBUG, "found completed timer %s", timer.strTitle.c_str());
+          kodi::Log(ADDON_LOG_DEBUG, "found completed timer %s", timer.strTitle.c_str());
           timer.state = FILMON_TIMER_STATE_COMPLETED;
         }
         timers.push_back(timer);
@@ -683,25 +645,25 @@ bool filmonAPIgetRecordingsTimers(bool completed)
 }
 
 // Wrapper to get recordings
-std::vector<FILMON_RECORDING> filmonAPIgetRecordings(void)
+std::vector<FILMON_RECORDING> PVRFilmonAPI::filmonAPIgetRecordings(void)
 {
   bool completed = true;
   if (filmonAPIgetRecordingsTimers(completed) != true)
   {
-    XBMC->Log(LOG_ERROR, "failed to get recordings");
+    kodi::Log(ADDON_LOG_ERROR, "failed to get recordings");
   }
   return recordings;
 }
 
 // Delete a recording
-bool filmonAPIdeleteRecording(unsigned int recordingId)
+bool PVRFilmonAPI::filmonAPIdeleteRecording(unsigned int recordingId)
 {
   bool res = false;
-  XBMC->Log(LOG_DEBUG, "number recordings is %u", recordings.size());
+  kodi::Log(ADDON_LOG_DEBUG, "number recordings is %u", recordings.size());
   for (unsigned int i = 0; i < recordings.size(); i++)
   {
-    XBMC->Log(LOG_DEBUG, "looking for recording %u", recordingId);
-    if ((recordings[i].strRecordingId).compare(intToString(recordingId)) == 0)
+    kodi::Log(ADDON_LOG_DEBUG, "looking for recording %u", recordingId);
+    if ((recordings[i].strRecordingId).compare(std::to_string(recordingId)) == 0)
     {
       std::string params = "record_id=" + recordings[i].strRecordingId;
       res = filmonRequest("tv/api/dvr/remove", sessionKeyParam + "&" + params);
@@ -716,7 +678,7 @@ bool filmonAPIdeleteRecording(unsigned int recordingId)
         if (root["success"].asBool())
         {
           recordings.erase(recordings.begin() + i);
-          XBMC->Log(LOG_DEBUG, "deleted recording");
+          kodi::Log(ADDON_LOG_DEBUG, "deleted recording");
         }
         else
         {
@@ -726,25 +688,25 @@ bool filmonAPIdeleteRecording(unsigned int recordingId)
       }
       break;
     }
-    XBMC->Log(LOG_DEBUG, "found recording %u", recordings[i].strRecordingId.c_str());
+    kodi::Log(ADDON_LOG_DEBUG, "found recording %u", recordings[i].strRecordingId.c_str());
   }
   return res;
 }
 
 // Get timers
-std::vector<FILMON_TIMER> filmonAPIgetTimers(void)
+std::vector<FILMON_TIMER> PVRFilmonAPI::filmonAPIgetTimers(void)
 {
   if (filmonAPIgetRecordingsTimers() != true)
   {
-    XBMC->Log(LOG_ERROR, "failed to get timers");
+    kodi::Log(ADDON_LOG_ERROR, "failed to get timers");
   }
   return timers;
 }
 
 // Add a timer
-bool filmonAPIaddTimer(int channelId, time_t startTime, time_t endTime)
+bool PVRFilmonAPI::filmonAPIaddTimer(int channelId, time_t startTime, time_t endTime)
 {
-  bool res = filmonRequest("tv/api/tvguide/" + intToString(channelId), sessionKeyParam);
+  bool res = filmonRequest("tv/api/tvguide/" + std::to_string(channelId), sessionKeyParam);
   if (res)
   {
     Json::Value root;
@@ -760,8 +722,8 @@ bool filmonAPIaddTimer(int channelId, time_t startTime, time_t endTime)
       time_t epgEndTime = 0;
       if (start.isString())
       {
-        epgStartTime = stringToInt(start.asString());
-        epgEndTime = stringToInt(end.asString());
+        epgStartTime = std::stoi(start.asString());
+        epgEndTime = std::stoi(end.asString());
       }
       else
       {
@@ -777,9 +739,9 @@ bool filmonAPIaddTimer(int channelId, time_t startTime, time_t endTime)
         std::string programmeName = progName.asString();
         std::string programmeDesc = progDesc.asString();
 
-        std::string params = "channel_id=" + intToString(channelId) +
+        std::string params = "channel_id=" + std::to_string(channelId) +
                              "&programme_id=" + programmeId +
-                             "&start_time=" + intToString(epgStartTime);
+                             "&start_time=" + std::to_string(epgStartTime);
         res = filmonRequest("tv/api/dvr/add", sessionKeyParam + "&" + params);
         if (res)
         {
@@ -790,7 +752,7 @@ bool filmonAPIaddTimer(int channelId, time_t startTime, time_t endTime)
           if (root["success"].asBool())
           {
             FILMON_TIMER timer;
-            timer.iClientIndex = stringToInt(programmeId);
+            timer.iClientIndex = std::stoul(programmeId);
             timer.iClientChannelUid = channelId;
             timer.startTime = epgStartTime;
             timer.endTime = epgEndTime;
@@ -807,7 +769,7 @@ bool filmonAPIaddTimer(int channelId, time_t startTime, time_t endTime)
             }
             setTimerDefaults(&timer);
             timers.push_back(timer);
-            XBMC->Log(LOG_DEBUG, "addded timer");
+            kodi::Log(ADDON_LOG_DEBUG, "addded timer");
           }
           else
           {
@@ -823,19 +785,19 @@ bool filmonAPIaddTimer(int channelId, time_t startTime, time_t endTime)
 }
 
 // Delete a timer
-bool filmonAPIdeleteTimer(unsigned int timerId, bool bForceDelete)
+bool PVRFilmonAPI::filmonAPIdeleteTimer(unsigned int timerId, bool bForceDelete)
 {
   bool res = true;
   for (unsigned int i = 0; i < timers.size(); i++)
   {
-    XBMC->Log(LOG_DEBUG, "looking for timer %u", timerId);
+    kodi::Log(ADDON_LOG_DEBUG, "looking for timer %u", timerId);
     if (timers[i].iClientIndex == timerId)
     {
       time_t t = time(0);
       if ((t >= timers[i].startTime && t <= timers[i].endTime && bForceDelete) ||
           t < timers[i].startTime || t > timers[i].endTime)
       {
-        std::string params = "record_id=" + intToString(timerId);
+        std::string params = "record_id=" + std::to_string(timerId);
         res = filmonRequest("tv/api/dvr/remove", sessionKeyParam + "&" + params);
         if (res)
         {
@@ -848,7 +810,7 @@ bool filmonAPIdeleteTimer(unsigned int timerId, bool bForceDelete)
           if (root["success"].asBool())
           {
             timers.erase(timers.begin() + i);
-            XBMC->Log(LOG_DEBUG, "deleted timer");
+            kodi::Log(ADDON_LOG_DEBUG, "deleted timer");
           }
           else
           {
@@ -859,16 +821,16 @@ bool filmonAPIdeleteTimer(unsigned int timerId, bool bForceDelete)
       }
       break;
     }
-    XBMC->Log(LOG_DEBUG, "found timer %u", timerId);
+    kodi::Log(ADDON_LOG_DEBUG, "found timer %u", timerId);
   }
   return res;
 }
 
 // Recording usage in bytes
-void filmonAPIgetUserStorage(long long* iTotal, long long* iUsed)
+void PVRFilmonAPI::filmonAPIgetUserStorage(uint64_t& iTotal, uint64_t& iUsed)
 {
-  *iTotal = storageTotal;
-  *iUsed = storageUsed;
+  iTotal = storageTotal;
+  iUsed = storageUsed;
 }
 
 // int main(int argc, char *argv[]) {

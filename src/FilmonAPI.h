@@ -8,8 +8,11 @@
 
 #pragma once
 
+#include <kodi/addon-instance/PVR.h>
 #include <string>
 #include <vector>
+
+#define REQUEST_RETRIES 4
 
 typedef enum
 {
@@ -95,18 +98,55 @@ typedef struct
   std::vector<FILMON_EPG_ENTRY> epg;
 } FILMON_CHANNEL;
 
-bool filmonAPICreate(void);
-void filmonAPIDelete(void);
-bool filmonAPIkeepAlive(void);
-bool filmonAPIlogin(std::string username, std::string password);
-void filmonAPIgetUserStorage(long long* iTotal, long long* iUsed);
-bool filmonAPIdeleteTimer(unsigned int timerId, bool bForceDelete);
-bool filmonAPIaddTimer(int channelId, time_t startTime, time_t endTime);
-bool filmonAPIdeleteRecording(unsigned int recordingId);
-bool filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL* channel);
-std::vector<unsigned int> filmonAPIgetChannels(void);
-unsigned int filmonAPIgetChannelCount(void);
-std::vector<FILMON_CHANNEL_GROUP> filmonAPIgetChannelGroups();
-std::vector<FILMON_RECORDING> filmonAPIgetRecordings(void);
-std::vector<FILMON_TIMER> filmonAPIgetTimers(void);
-std::string filmonAPIConnection();
+class PVRFilmonAPI
+{
+public:
+  PVRFilmonAPI(kodi::addon::CInstancePVRClient& client) : m_client(client) { }
+
+  bool filmonAPICreate(void);
+  void filmonAPIDelete(void);
+  bool filmonAPIkeepAlive(void);
+  bool filmonAPIlogin(std::string username, std::string password);
+  void filmonAPIgetUserStorage(uint64_t& iTotal, uint64_t& iUsed);
+  bool filmonAPIdeleteTimer(unsigned int timerId, bool bForceDelete);
+  bool filmonAPIaddTimer(int channelId, time_t startTime, time_t endTime);
+  bool filmonAPIdeleteRecording(unsigned int recordingId);
+  bool filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL* channel, bool preferHd);
+  std::vector<unsigned int> filmonAPIgetChannels(void);
+  unsigned int filmonAPIgetChannelCount(void);
+  std::vector<FILMON_CHANNEL_GROUP> filmonAPIgetChannelGroups();
+  std::vector<FILMON_RECORDING> filmonAPIgetRecordings(void);
+  std::vector<FILMON_TIMER> filmonAPIgetTimers(void);
+  std::string filmonAPIConnection();
+
+private:
+  bool filmonRequest(std::string path, std::string params = "", unsigned int retries = REQUEST_RETRIES);
+  void filmonAPIlogout(void);
+  bool filmonAPIgetSessionKey(void);
+  void filmonAPIgetswfPlayer();
+  int filmonAPIgetGenre(std::string group);
+  std::string filmonAPIgetRtmpStream(std::string url, std::string name);
+  bool filmonAPIgetRecordingsTimers(bool completed = false);
+  void clearResponse();
+  std::string timeToHourMin(unsigned int t);
+  void setTimerDefaults(FILMON_TIMER* t);
+
+  std::string filmonUsername = "";
+  std::string filmonpassword = "";
+  std::string sessionKeyParam = "";
+  std::string swfPlayer = "";
+
+  long long storageUsed = 0;
+  long long storageTotal = 0;
+
+  std::vector<unsigned int> channelList;
+  std::vector<FILMON_CHANNEL_GROUP> groups;
+  std::vector<FILMON_RECORDING> recordings;
+  std::vector<FILMON_TIMER> timers;
+
+  bool connected = false;
+
+  std::string response;
+
+  kodi::addon::CInstancePVRClient& m_client;
+};
