@@ -442,7 +442,7 @@ bool PVRFilmonAPI::filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL* c
         if (programmeId.compare(offAir) != 0)
         {
           epgEntry.strTitle = programmeName.asString();
-          epgEntry.iBroadcastId = std::stoul(programmeId);
+          epgEntry.iBroadcastId = std::atoi(programmeId.c_str());
           if (plot.isNull() != true)
           {
             epgEntry.strPlot = plot.asString();
@@ -467,8 +467,8 @@ bool PVRFilmonAPI::filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL* c
         epgEntry.iChannelId = channelId;
         if (startTime.isString())
         {
-          epgEntry.startTime = std::stoi(startTime.asString());
-          epgEntry.endTime = std::stoi(endTime.asString());
+          epgEntry.startTime = std::atoi(startTime.asString().c_str());
+          epgEntry.endTime = std::atoi(endTime.asString().c_str());
         }
         else
         {
@@ -506,14 +506,14 @@ std::vector<FILMON_CHANNEL_GROUP> PVRFilmonAPI::filmonAPIgetChannelGroups()
       Json::Value channels = root[i]["channels"];
       FILMON_CHANNEL_GROUP group;
       group.bRadio = false;
-      group.iGroupId = std::stoi(groupId.asString());
+      group.iGroupId = std::atoi(groupId.asString().c_str());
       group.strGroupName = groupName.asString();
       std::vector<unsigned int> members;
       unsigned int membersCount = channels.size();
       for (unsigned int j = 0; j < membersCount; j++)
       {
         Json::Value member = channels[j];
-        unsigned int ch = std::stoul(member.asString());
+        unsigned int ch = std::atoi(member.asString().c_str());
         if (std::find(channelList.begin(), channelList.end(), ch) != channelList.end())
         {
           members.push_back(ch);
@@ -578,8 +578,8 @@ bool PVRFilmonAPI::filmonAPIgetRecordingsTimers(bool completed)
       std::string recTimId = recordingsTimers[recordingId]["id"].asString();
       std::string recTimTitle = recordingsTimers[recordingId]["title"].asString();
       unsigned int recTimStart =
-          std::stoul(recordingsTimers[recordingId]["time_start"].asString());
-      unsigned int recDuration = std::stoul(recordingsTimers[recordingId]["length"].asString());
+          std::atoi(recordingsTimers[recordingId]["time_start"].asString().c_str());
+      unsigned int recDuration = std::atoi(recordingsTimers[recordingId]["length"].asString().c_str());
 
       Json::Value status = recordingsTimers[recordingId]["status"];
       if (completed && status.asString().compare(std::string(RECORDED_STATUS)) == 0)
@@ -611,9 +611,9 @@ bool PVRFilmonAPI::filmonAPIgetRecordingsTimers(bool completed)
         }
 
         FILMON_TIMER timer;
-        timer.iClientIndex = std::stoul(recTimId);
+        timer.iClientIndex = std::atoi(recTimId.c_str());
         timer.iClientChannelUid =
-            std::stoi(recordingsTimers[recordingId]["channel_id"].asString());
+            std::atoi(recordingsTimers[recordingId]["channel_id"].asString().c_str());
         timer.startTime = recTimStart;
         timer.endTime = timer.startTime + recDuration;
         timer.strTitle = recTimTitle;
@@ -722,8 +722,8 @@ bool PVRFilmonAPI::filmonAPIaddTimer(int channelId, time_t startTime, time_t end
       time_t epgEndTime = 0;
       if (start.isString())
       {
-        epgStartTime = std::stoi(start.asString());
-        epgEndTime = std::stoi(end.asString());
+        epgStartTime = std::atoi(start.asString().c_str());
+        epgEndTime = std::atoi(end.asString().c_str());
       }
       else
       {
@@ -752,7 +752,7 @@ bool PVRFilmonAPI::filmonAPIaddTimer(int channelId, time_t startTime, time_t end
           if (root["success"].asBool())
           {
             FILMON_TIMER timer;
-            timer.iClientIndex = std::stoul(programmeId);
+            timer.iClientIndex = std::atoi(programmeId.c_str());
             timer.iClientChannelUid = channelId;
             timer.startTime = epgStartTime;
             timer.endTime = epgEndTime;
