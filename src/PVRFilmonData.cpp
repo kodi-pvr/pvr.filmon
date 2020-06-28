@@ -493,7 +493,7 @@ PVR_ERROR PVRFilmonData::DeleteRecording(const kodi::addon::PVRRecording& record
 {
   std::lock_guard<std::mutex> lock(m_mutex);
   kodi::Log(ADDON_LOG_DEBUG, "deleting recording %s", recording.GetRecordingId().c_str());
-  if (m_api.filmonAPIdeleteRecording(std::stoul(recording.GetRecordingId())))
+  if (m_api.filmonAPIdeleteRecording(std::atoi(recording.GetRecordingId().c_str())))
   {
     kodi::addon::CInstancePVRClient::TriggerRecordingUpdate();
     return PVR_ERROR_NO_ERROR;

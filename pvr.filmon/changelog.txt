@@ -1,3 +1,6 @@
+5.0.1:
+- Use atoi instead of stoi and stoul thread dying
+
 5.0.0:
 - Update PVR API 7.0.0
 - Rework addon to support new API interface
@@ -110,7 +113,7 @@ Language updates
 Initial Kodi v18 version
 
 1.4.5
-Updated Fix EPG 
+Updated Fix EPG
 
 1.4.3
 Updated User Agent to login to FilmOn
