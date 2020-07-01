@@ -15,13 +15,13 @@
 
 #include <kodi/General.h>
 
-PVRFilmonData::PVRFilmonData(void) : m_api(*this)
+PVRFilmonData::PVRFilmonData(void) : m_filmonApi(*this)
 {
 }
 
 PVRFilmonData::~PVRFilmonData(void)
 {
-  m_api.filmonAPIDelete();
+  m_filmonApi.Delete();
 }
 
 ADDON_STATUS PVRFilmonData::Create()
@@ -93,10 +93,10 @@ ADDON_STATUS PVRFilmonData::SetSetting(const std::string& settingName,
 bool PVRFilmonData::Load()
 {
   std::lock_guard<std::mutex> lock(m_mutex);
-  bool res = m_api.filmonAPICreate();
+  bool res = m_filmonApi.Create();
   if (res)
   {
-    res = m_api.filmonAPIlogin(m_username, m_password);
+    res = m_filmonApi.Login(m_username, m_password);
     if (res)
     {
       kodi::addon::CInstancePVRClient::ConnectionStateChange("", PVR_CONNECTION_STATE_CONNECTED, "");
@@ -150,7 +150,7 @@ PVR_ERROR PVRFilmonData::GetBackendVersion(std::string& version)
 
 PVR_ERROR PVRFilmonData::GetConnectionString(std::string& connection)
 {
-  connection = m_api.filmonAPIConnection();
+  connection = m_filmonApi.GetConnectionString();
   return PVR_ERROR_NO_ERROR;
 }
 
@@ -158,7 +158,7 @@ PVR_ERROR PVRFilmonData::GetDriveSpace(uint64_t& total, uint64_t& used)
 {
   std::lock_guard<std::mutex> lock(m_mutex);
   kodi::Log(ADDON_LOG_DEBUG, "getting user storage from API");
-  m_api.filmonAPIgetUserStorage(total, used);
+  m_filmonApi.GetUserStorage(total, used);
   total = total / 10;
   used = used / 10;
   return PVR_ERROR_NO_ERROR;
@@ -166,7 +166,7 @@ PVR_ERROR PVRFilmonData::GetDriveSpace(uint64_t& total, uint64_t& used)
 
 PVR_ERROR PVRFilmonData::GetChannelsAmount(int& amount)
 {
-  unsigned int chCount = m_api.filmonAPIgetChannelCount();
+  unsigned int chCount = m_filmonApi.GetChannelCount();
   kodi::Log(ADDON_LOG_DEBUG, "channel count is %d ", chCount);
   amount = chCount;
   return PVR_ERROR_NO_ERROR;
@@ -179,14 +179,14 @@ PVR_ERROR PVRFilmonData::GetChannels(bool radio, kodi::addon::PVRChannelsResultS
   std::lock_guard<std::mutex> lock(m_mutex);
   bool res = false;
   bool expired = false;
-  if (time(0) - m_lastTimeChannels > FILMON_CACHE_TIME)
+  if (std::time(nullptr) - m_lastTimeChannels > FILMON_CACHE_TIME)
   {
     kodi::Log(ADDON_LOG_DEBUG, "cache expired, getting channels from API");
     m_channels.clear();
     expired = true;
   }
 
-  std::vector<unsigned int> channelList = m_api.filmonAPIgetChannels();
+  std::vector<unsigned int> channelList = m_filmonApi.GetChannels();
   unsigned int channelCount = channelList.size();
   unsigned int channelId = 0;
 
@@ -196,7 +196,7 @@ PVR_ERROR PVRFilmonData::GetChannels(bool radio, kodi::addon::PVRChannelsResultS
     channelId = channelList[i];
     if (expired)
     {
-      res = m_api.filmonAPIgetChannel(channelId, &channel, m_preferHd);
+      res = m_filmonApi.GetChannel(channelId, &channel, m_preferHd);
       if (m_onLoad == true)
       {
         kodi::QueueFormattedNotification(QUEUE_INFO, "Filmon loaded %s", channel.strChannelName.c_str());
@@ -238,7 +238,7 @@ PVR_ERROR PVRFilmonData::GetChannels(bool radio, kodi::addon::PVRChannelsResultS
   }
   if (expired)
   {
-    m_lastTimeChannels = time(0);
+    m_lastTimeChannels = std::time(nullptr);
   }
   m_onLoad = false;
   return PVR_ERROR_NO_ERROR;
@@ -288,11 +288,11 @@ PVR_ERROR PVRFilmonData::GetChannelGroups(bool radio, kodi::addon::PVRChannelGro
   std::lock_guard<std::mutex> lock(m_mutex);
   if (radio == false)
   {
-    if (time(0) - m_lastTimeGroups > FILMON_CACHE_TIME)
+    if (std::time(nullptr) - m_lastTimeGroups > FILMON_CACHE_TIME)
     {
       kodi::Log(ADDON_LOG_DEBUG, "cache expired, getting channel groups from API");
-      m_groups = m_api.filmonAPIgetChannelGroups();
-      m_lastTimeGroups = time(0);
+      m_groups = m_filmonApi.GetChannelGroups();
+      m_lastTimeGroups = std::time(nullptr);
     }
     for (unsigned int grpId = 0; grpId < m_groups.size(); grpId++)
     {
@@ -312,11 +312,11 @@ PVR_ERROR PVRFilmonData::GetChannelGroupMembers(const kodi::addon::PVRChannelGro
                                                 kodi::addon::PVRChannelGroupMembersResultSet& results)
 {
   std::lock_guard<std::mutex> lock(m_mutex);
-  if (time(0) - m_lastTimeGroups > FILMON_CACHE_TIME)
+  if (std::time(nullptr) - m_lastTimeGroups > FILMON_CACHE_TIME)
   {
     kodi::Log(ADDON_LOG_DEBUG, "cache expired, getting channel groups members from API");
-    m_groups = m_api.filmonAPIgetChannelGroups();
-    m_lastTimeGroups = time(0);
+    m_groups = m_filmonApi.GetChannelGroups();
+    m_lastTimeGroups = std::time(nullptr);
   }
   for (unsigned int grpId = 0; grpId < m_groups.size(); grpId++)
   {
@@ -347,10 +347,10 @@ int PVRFilmonData::UpdateChannel(unsigned int channelId)
   {
     if (m_channels[i].iUniqueId == channelId)
     {
-      if (time(0) - m_lastTimeChannels > FILMON_CACHE_TIME)
+      if (std::time(nullptr) - m_lastTimeChannels > FILMON_CACHE_TIME)
       {
         kodi::Log(ADDON_LOG_DEBUG, "cache expired, getting channel from API");
-        m_api.filmonAPIgetChannel(channelId, &m_channels[i], m_preferHd);
+        m_filmonApi.GetChannel(channelId, &m_channels[i], m_preferHd);
       }
       index = i;
       break;
@@ -404,10 +404,10 @@ PVR_ERROR PVRFilmonData::GetEPGForChannel(int channelUid, time_t start, time_t e
         results.Add(tag);
       }
     }
-    if (time(0) - m_lastTimeChannels > FILMON_CACHE_TIME)
+    if (std::time(nullptr) - m_lastTimeChannels > FILMON_CACHE_TIME)
     {
       // Get PVR to re-read refreshed channels
-      if (m_api.filmonAPIlogin(m_username, m_password))
+      if (m_filmonApi.Login(m_username, m_password))
       {
         kodi::addon::CInstancePVRClient::TriggerChannelGroupsUpdate();
         kodi::addon::CInstancePVRClient::TriggerChannelUpdate();
@@ -432,7 +432,7 @@ PVR_ERROR PVRFilmonData::GetRecordings(bool deleted, kodi::addon::PVRRecordingsR
 {
   std::lock_guard<std::mutex> lock(m_mutex);
   kodi::Log(ADDON_LOG_DEBUG, "getting recordings from API");
-  m_recordings = m_api.filmonAPIgetRecordings();
+  m_recordings = m_filmonApi.GetRecordings();
   for (std::vector<PVRFilmonRecording>::iterator it = m_recordings.begin();
        it != m_recordings.end(); it++)
   {
@@ -471,7 +471,7 @@ PVR_ERROR PVRFilmonData::GetRecordingStreamProperties(const kodi::addon::PVRReco
 {
   std::lock_guard<std::mutex> lock(m_mutex);
   std::string strRecordingFile;
-  m_recordings = m_api.filmonAPIgetRecordings();
+  m_recordings = m_filmonApi.GetRecordings();
   for (const auto& FilMonRecording : m_recordings)
   {
     if (FilMonRecording.strRecordingId == recording.GetRecordingId())
@@ -493,7 +493,7 @@ PVR_ERROR PVRFilmonData::DeleteRecording(const kodi::addon::PVRRecording& record
 {
   std::lock_guard<std::mutex> lock(m_mutex);
   kodi::Log(ADDON_LOG_DEBUG, "deleting recording %s", recording.GetRecordingId().c_str());
-  if (m_api.filmonAPIdeleteRecording(std::atoi(recording.GetRecordingId().c_str())))
+  if (m_filmonApi.DeleteRecording(std::atoi(recording.GetRecordingId().c_str())))
   {
     kodi::addon::CInstancePVRClient::TriggerRecordingUpdate();
     return PVR_ERROR_NO_ERROR;
@@ -523,9 +523,9 @@ PVR_ERROR PVRFilmonData::GetTimers(kodi::addon::PVRTimersResultSet& results)
 {
   std::lock_guard<std::mutex> lock(m_mutex);
   kodi::Log(ADDON_LOG_DEBUG, "getting timers from API");
-  if (m_api.filmonAPIkeepAlive())
+  if (m_filmonApi.KeepAlive())
   { // Keeps session alive
-    m_timers = m_api.filmonAPIgetTimers();
+    m_timers = m_filmonApi.GetTimers();
     for (std::vector<PVRFilmonTimer>::iterator it = m_timers.begin(); it != m_timers.end(); it++)
     {
       PVRFilmonTimer& timer = *it;
@@ -568,7 +568,7 @@ PVR_ERROR PVRFilmonData::AddTimer(const kodi::addon::PVRTimer& timer)
 {
   std::lock_guard<std::mutex> lock(m_mutex);
   kodi::Log(ADDON_LOG_DEBUG, "adding timer");
-  if (m_api.filmonAPIaddTimer(timer.GetClientChannelUid(), timer.GetStartTime(), timer.GetEndTime()))
+  if (m_filmonApi.AddTimer(timer.GetClientChannelUid(), timer.GetStartTime(), timer.GetEndTime()))
   {
     kodi::addon::CInstancePVRClient::TriggerTimerUpdate();
     return PVR_ERROR_NO_ERROR;
@@ -583,7 +583,7 @@ PVR_ERROR PVRFilmonData::DeleteTimer(const kodi::addon::PVRTimer& timer, bool bF
 {
   std::lock_guard<std::mutex> lock(m_mutex);
   kodi::Log(ADDON_LOG_DEBUG, "deleting timer %d", timer.GetClientIndex());
-  if (m_api.filmonAPIdeleteTimer(timer.GetClientIndex(), bForceDelete))
+  if (m_filmonApi.DeleteTimer(timer.GetClientIndex(), bForceDelete))
   {
     kodi::addon::CInstancePVRClient::TriggerTimerUpdate();
     return PVR_ERROR_NO_ERROR;
@@ -598,8 +598,8 @@ PVR_ERROR PVRFilmonData::UpdateTimer(const kodi::addon::PVRTimer& timer)
 {
   std::lock_guard<std::mutex> lock(m_mutex);
   kodi::Log(ADDON_LOG_DEBUG, "updating timer");
-  if (m_api.filmonAPIdeleteTimer(timer.GetClientIndex(), true) &&
-      m_api.filmonAPIaddTimer(timer.GetClientChannelUid(), timer.GetStartTime(), timer.GetEndTime()))
+  if (m_filmonApi.DeleteTimer(timer.GetClientIndex(), true) &&
+      m_filmonApi.AddTimer(timer.GetClientChannelUid(), timer.GetStartTime(), timer.GetEndTime()))
   {
     kodi::addon::CInstancePVRClient::TriggerTimerUpdate();
     return PVR_ERROR_NO_ERROR;

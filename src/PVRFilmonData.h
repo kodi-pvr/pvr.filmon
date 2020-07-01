@@ -82,7 +82,7 @@ private:
   time_t m_lastTimeChannels;
   bool m_onLoad = true;
 
-  PVRFilmonAPI m_api;
+  PVRFilmonAPI m_filmonApi;
   std::string m_username;
   std::string m_password;
   bool m_preferHd = false;

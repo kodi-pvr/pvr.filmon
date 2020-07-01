@@ -61,7 +61,7 @@ static genreEntry genreTable[] = {
 
 #define GENRE_TABLE_LEN sizeof(genreTable) / sizeof(genreTable[0])
 
-std::string PVRFilmonAPI::timeToHourMin(unsigned int t)
+std::string PVRFilmonAPI::TimeToHourMin(unsigned int t)
 {
   time_t tt = (time_t)t;
   tm* gmtm = gmtime(&tt);
@@ -69,7 +69,7 @@ std::string PVRFilmonAPI::timeToHourMin(unsigned int t)
 }
 
 // Timer settings not supported in Filmon
-void PVRFilmonAPI::setTimerDefaults(FILMON_TIMER* t)
+void PVRFilmonAPI::SetTimerDefaults(FILMON_TIMER* t)
 {
   t->bIsRepeating = false;
   t->firstDay = 0;
@@ -82,26 +82,26 @@ void PVRFilmonAPI::setTimerDefaults(FILMON_TIMER* t)
 }
 
 // Free response
-void PVRFilmonAPI::clearResponse()
+void PVRFilmonAPI::ClearResponse()
 {
   response.clear();
 }
 
 // Initialize connection
-bool PVRFilmonAPI::filmonAPICreate(void)
+bool PVRFilmonAPI::Create(void)
 {
   connected = true;
   return connected;
 }
 
 // Remove connection
-void PVRFilmonAPI::filmonAPIDelete(void)
+void PVRFilmonAPI::Delete(void)
 {
   connected = false;
 }
 
 // Connection URL
-std::string PVRFilmonAPI::filmonAPIConnection()
+std::string PVRFilmonAPI::GetConnectionString()
 {
   if (connected)
   {
@@ -114,7 +114,7 @@ std::string PVRFilmonAPI::filmonAPIConnection()
 }
 
 // Make a request
-bool PVRFilmonAPI::filmonRequest(std::string path, std::string params, unsigned int retries)
+bool PVRFilmonAPI::DoRequest(std::string path, std::string params, unsigned int retries)
 {
   std::string request = FILMON_URL;
 
@@ -135,7 +135,7 @@ bool PVRFilmonAPI::filmonRequest(std::string path, std::string params, unsigned 
     {
       kodi::Log(ADDON_LOG_ERROR, "request failure");
       m_client.ConnectionStateChange(request, PVR_CONNECTION_STATE_SERVER_UNREACHABLE, "");
-      clearResponse();
+      ClearResponse();
       std::this_thread::sleep_for(std::chrono::microseconds(REQUEST_RETRY_TIMEOUT));
     }
     else
@@ -155,44 +155,44 @@ bool PVRFilmonAPI::filmonRequest(std::string path, std::string params, unsigned 
   }
   else
   {
-    filmonAPIDelete();
-    filmonAPICreate();
+    Delete();
+    Create();
     return false;
   }
 }
 
 // Logout user
-void PVRFilmonAPI::filmonAPIlogout(void)
+void PVRFilmonAPI::Logout(void)
 {
-  bool res = filmonRequest("tv/api/logout");
+  bool res = DoRequest("tv/api/logout");
   if (res == true)
   {
-    clearResponse();
+    ClearResponse();
   }
 }
 
 // Keepalive
-bool PVRFilmonAPI::filmonAPIkeepAlive(void)
+bool PVRFilmonAPI::KeepAlive(void)
 {
-  bool res = filmonRequest("tv/api/keep-alive", sessionKeyParam);
+  bool res = DoRequest("tv/api/keep-alive", sessionKeyParam);
   if (!res)
   {
     // Login again if it failed
-    filmonAPIlogout();
-    filmonAPIlogin(filmonUsername, filmonpassword);
+    Logout();
+    Login(filmonUsername, filmonpassword);
   }
   else
   {
-    clearResponse();
+    ClearResponse();
   }
   return res;
 }
 
 // Session
-bool PVRFilmonAPI::filmonAPIgetSessionKey(void)
+bool PVRFilmonAPI::GetSessionKey(void)
 {
   bool res =
-      filmonRequest("tv/api/"
+      DoRequest("tv/api/"
                     "init?channelProvider=ipad&app_id="
                     "IGlsbSBuVCJ7UDwZBl0eBR4JGgEBERhRXlBcWl0CEw==|User-Agent=Mozilla%2F5.0%"
                     "20(Windows%3B%20U%3B%20Windows%20NT%205.1%3B%20en-GB%3B%20rv%3A1.9.0.3)%"
@@ -208,16 +208,16 @@ bool PVRFilmonAPI::filmonAPIgetSessionKey(void)
     sessionKeyParam = "session_key=";
     sessionKeyParam.append(sessionKey.asString());
     kodi::Log(ADDON_LOG_DEBUG, "got session key %s", sessionKey.asString().c_str());
-    clearResponse();
+    ClearResponse();
   }
   return res;
 }
 
 // Login subscriber
-bool PVRFilmonAPI::filmonAPIlogin(std::string username, std::string password)
+bool PVRFilmonAPI::Login(std::string username, std::string password)
 {
 
-  bool res = filmonAPIgetSessionKey();
+  bool res = GetSessionKey();
   if (res)
   {
     kodi::Log(ADDON_LOG_DEBUG, "logging in user");
@@ -228,7 +228,7 @@ bool PVRFilmonAPI::filmonAPIlogin(std::string username, std::string password)
     std::transform(md5pwd.begin(), md5pwd.end(), md5pwd.begin(), ::tolower);
 
     std::string params = "login=" + username + "&password=" + md5pwd;
-    res = filmonRequest("tv/api/login", sessionKeyParam + "&" + params, 1);
+    res = DoRequest("tv/api/login", sessionKeyParam + "&" + params, 1);
     if (res)
     {
       Json::Value root;
@@ -246,17 +246,17 @@ bool PVRFilmonAPI::filmonAPIlogin(std::string username, std::string password)
         channelList.push_back(chId.asUInt());
         kodi::Log(ADDON_LOG_INFO, "added channel %u", chId.asUInt());
       }
-      clearResponse();
+      ClearResponse();
     }
   }
   return res;
 }
 
 // SWF player URL
-void PVRFilmonAPI::filmonAPIgetswfPlayer()
+void PVRFilmonAPI::GetSwfPlayer()
 {
   swfPlayer = std::string("/tv/modules/FilmOnTV/files/flashapp/filmon/FilmonPlayer.swf?v=56");
-  bool res = filmonRequest("tv/", "");
+  bool res = DoRequest("tv/", "");
   if (res == true)
   {
     char* resp = (char*)malloc(response.length());
@@ -284,13 +284,13 @@ void PVRFilmonAPI::filmonAPIgetswfPlayer()
       swfPlayer = streamer.asString();
       kodi::Log(ADDON_LOG_DEBUG, "parsed flash config %s", swfPlayer.c_str());
     }
-    clearResponse();
+    ClearResponse();
   }
   swfPlayer = std::string("http://www.filmon.com") + swfPlayer;
   kodi::Log(ADDON_LOG_INFO, "swfPlayer is %s", swfPlayer.c_str());
 }
 
-int PVRFilmonAPI::filmonAPIgetGenre(std::string group)
+int PVRFilmonAPI::GetGenre(std::string group)
 {
   for (unsigned int i = 0; i < GENRE_TABLE_LEN; i++)
   {
@@ -303,13 +303,13 @@ int PVRFilmonAPI::filmonAPIgetGenre(std::string group)
 }
 
 // Channel stream (RTMP)
-std::string PVRFilmonAPI::filmonAPIgetRtmpStream(std::string url, std::string name)
+std::string PVRFilmonAPI::GetRtmpStream(std::string url, std::string name)
 {
   char urlDelimiter = '/';
   std::vector<std::string> streamElements;
   if (swfPlayer.empty())
   {
-    filmonAPIgetswfPlayer();
+    GetSwfPlayer();
   }
   for (size_t p = 0, q = 0; p != url.npos; p = q)
   {
@@ -332,9 +332,9 @@ std::string PVRFilmonAPI::filmonAPIgetRtmpStream(std::string url, std::string na
 }
 
 // Channel
-bool PVRFilmonAPI::filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL* channel, bool preferHd)
+bool PVRFilmonAPI::GetChannel(unsigned int channelId, FILMON_CHANNEL* channel, bool preferHd)
 {
-  bool res = filmonRequest("tv/api/channel/" + std::to_string(channelId), sessionKeyParam);
+  bool res = DoRequest("tv/api/channel/" + std::to_string(channelId), sessionKeyParam);
   if (res == true)
   {
     Json::Value root;
@@ -387,7 +387,7 @@ bool PVRFilmonAPI::filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL* c
     streamURL = streams[stream]["url"].asString();
     if (streamURL.find("rtmp://") == 0)
     {
-      streamURL = filmonAPIgetRtmpStream(streamURL, streams[stream]["name"].asString());
+      streamURL = GetRtmpStream(streamURL, streams[stream]["name"].asString());
       kodi::Log(ADDON_LOG_DEBUG, "RTMP stream available: %s", streamURL.c_str());
     }
     else
@@ -417,9 +417,9 @@ bool PVRFilmonAPI::filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL* c
     channel->strIconPath = iconPath;
     channel->strStreamURL = streamURL;
     (channel->epg).clear();
-    clearResponse();
+    ClearResponse();
 
-    bool res = filmonRequest("tv/api/tvguide/" + std::to_string(channelId));
+    bool res = DoRequest("tv/api/tvguide/" + std::to_string(channelId));
     if (res == true)
     {
       // Get EPG
@@ -476,22 +476,22 @@ bool PVRFilmonAPI::filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL* c
           epgEntry.endTime = endTime.asUInt();
         }
         epgEntry.strPlotOutline = "";
-        epgEntry.iGenreType = filmonAPIgetGenre(group.asString());
+        epgEntry.iGenreType = GetGenre(group.asString());
         epgEntry.iGenreSubType = 0;
         (channel->epg).push_back(epgEntry);
         entries++;
       }
       kodi::Log(ADDON_LOG_DEBUG, "number of EPG entries is %u", entries);
-      clearResponse();
+      ClearResponse();
     }
   }
   return res;
 }
 
 // Channel groups
-std::vector<FILMON_CHANNEL_GROUP> PVRFilmonAPI::filmonAPIgetChannelGroups()
+std::vector<FILMON_CHANNEL_GROUP> PVRFilmonAPI::GetChannelGroups()
 {
-  bool res = filmonRequest("tv/api/groups", sessionKeyParam);
+  bool res = DoRequest("tv/api/groups", sessionKeyParam);
   if (res == true)
   {
     Json::Value root;
@@ -527,19 +527,19 @@ std::vector<FILMON_CHANNEL_GROUP> PVRFilmonAPI::filmonAPIgetChannelGroups()
         kodi::Log(ADDON_LOG_INFO, "added group %s", group.strGroupName.c_str());
       }
     }
-    clearResponse();
+    ClearResponse();
   }
   return groups;
 }
 
 // The list of subscriber channels
-std::vector<unsigned int> PVRFilmonAPI::filmonAPIgetChannels(void)
+std::vector<unsigned int> PVRFilmonAPI::GetChannels(void)
 {
   return channelList;
 }
 
 // The count of subscriber channels
-unsigned int PVRFilmonAPI::filmonAPIgetChannelCount(void)
+unsigned int PVRFilmonAPI::GetChannelCount(void)
 {
   if (channelList.empty())
   {
@@ -550,9 +550,9 @@ unsigned int PVRFilmonAPI::filmonAPIgetChannelCount(void)
 }
 
 // Gets all timers and recordings
-bool PVRFilmonAPI::filmonAPIgetRecordingsTimers(bool completed)
+bool PVRFilmonAPI::GetRecordingsTimers(bool completed)
 {
-  bool res = filmonRequest("tv/api/dvr/list", sessionKeyParam);
+  bool res = DoRequest("tv/api/dvr/list", sessionKeyParam);
   if (res == true)
   {
     Json::Value root;
@@ -619,8 +619,8 @@ bool PVRFilmonAPI::filmonAPIgetRecordingsTimers(bool completed)
         timer.strTitle = recTimTitle;
         timer.state = FILMON_TIMER_STATE_NEW;
         timer.strSummary = recordingsTimers[recordingId]["description"].asString();
-        setTimerDefaults(&timer);
-        time_t t = time(0);
+        SetTimerDefaults(&timer);
+        time_t t = time(nullptr);
         if (t >= timer.startTime && t <= timer.endTime)
         {
           kodi::Log(ADDON_LOG_DEBUG, "found active timer %s", timer.strTitle.c_str());
@@ -639,16 +639,16 @@ bool PVRFilmonAPI::filmonAPIgetRecordingsTimers(bool completed)
         timers.push_back(timer);
       }
     }
-    clearResponse();
+    ClearResponse();
   }
   return res;
 }
 
 // Wrapper to get recordings
-std::vector<FILMON_RECORDING> PVRFilmonAPI::filmonAPIgetRecordings(void)
+std::vector<FILMON_RECORDING> PVRFilmonAPI::GetRecordings(void)
 {
   bool completed = true;
-  if (filmonAPIgetRecordingsTimers(completed) != true)
+  if (GetRecordingsTimers(completed) != true)
   {
     kodi::Log(ADDON_LOG_ERROR, "failed to get recordings");
   }
@@ -656,7 +656,7 @@ std::vector<FILMON_RECORDING> PVRFilmonAPI::filmonAPIgetRecordings(void)
 }
 
 // Delete a recording
-bool PVRFilmonAPI::filmonAPIdeleteRecording(unsigned int recordingId)
+bool PVRFilmonAPI::DeleteRecording(unsigned int recordingId)
 {
   bool res = false;
   kodi::Log(ADDON_LOG_DEBUG, "number recordings is %u", recordings.size());
@@ -666,7 +666,7 @@ bool PVRFilmonAPI::filmonAPIdeleteRecording(unsigned int recordingId)
     if ((recordings[i].strRecordingId).compare(std::to_string(recordingId)) == 0)
     {
       std::string params = "record_id=" + recordings[i].strRecordingId;
-      res = filmonRequest("tv/api/dvr/remove", sessionKeyParam + "&" + params);
+      res = DoRequest("tv/api/dvr/remove", sessionKeyParam + "&" + params);
       if (res)
       {
         Json::Value root;
@@ -684,7 +684,7 @@ bool PVRFilmonAPI::filmonAPIdeleteRecording(unsigned int recordingId)
         {
           res = false;
         }
-        clearResponse();
+        ClearResponse();
       }
       break;
     }
@@ -694,9 +694,9 @@ bool PVRFilmonAPI::filmonAPIdeleteRecording(unsigned int recordingId)
 }
 
 // Get timers
-std::vector<FILMON_TIMER> PVRFilmonAPI::filmonAPIgetTimers(void)
+std::vector<FILMON_TIMER> PVRFilmonAPI::GetTimers(void)
 {
-  if (filmonAPIgetRecordingsTimers() != true)
+  if (GetRecordingsTimers() != true)
   {
     kodi::Log(ADDON_LOG_ERROR, "failed to get timers");
   }
@@ -704,9 +704,9 @@ std::vector<FILMON_TIMER> PVRFilmonAPI::filmonAPIgetTimers(void)
 }
 
 // Add a timer
-bool PVRFilmonAPI::filmonAPIaddTimer(int channelId, time_t startTime, time_t endTime)
+bool PVRFilmonAPI::AddTimer(int channelId, time_t startTime, time_t endTime)
 {
-  bool res = filmonRequest("tv/api/tvguide/" + std::to_string(channelId), sessionKeyParam);
+  bool res = DoRequest("tv/api/tvguide/" + std::to_string(channelId), sessionKeyParam);
   if (res)
   {
     Json::Value root;
@@ -742,7 +742,7 @@ bool PVRFilmonAPI::filmonAPIaddTimer(int channelId, time_t startTime, time_t end
         std::string params = "channel_id=" + std::to_string(channelId) +
                              "&programme_id=" + programmeId +
                              "&start_time=" + std::to_string(epgStartTime);
-        res = filmonRequest("tv/api/dvr/add", sessionKeyParam + "&" + params);
+        res = DoRequest("tv/api/dvr/add", sessionKeyParam + "&" + params);
         if (res)
         {
           Json::Value root;
@@ -758,7 +758,7 @@ bool PVRFilmonAPI::filmonAPIaddTimer(int channelId, time_t startTime, time_t end
             timer.endTime = epgEndTime;
             timer.strTitle = programmeName;
             timer.strSummary = programmeDesc;
-            time_t t = time(0);
+            time_t t = time(nullptr);
             if (t >= epgStartTime && t <= epgEndTime)
             {
               timer.state = FILMON_TIMER_STATE_RECORDING;
@@ -767,7 +767,7 @@ bool PVRFilmonAPI::filmonAPIaddTimer(int channelId, time_t startTime, time_t end
             {
               timer.state = FILMON_TIMER_STATE_SCHEDULED;
             }
-            setTimerDefaults(&timer);
+            SetTimerDefaults(&timer);
             timers.push_back(timer);
             kodi::Log(ADDON_LOG_DEBUG, "addded timer");
           }
@@ -779,13 +779,13 @@ bool PVRFilmonAPI::filmonAPIaddTimer(int channelId, time_t startTime, time_t end
         break;
       }
     }
-    clearResponse();
+    ClearResponse();
   }
   return res;
 }
 
 // Delete a timer
-bool PVRFilmonAPI::filmonAPIdeleteTimer(unsigned int timerId, bool bForceDelete)
+bool PVRFilmonAPI::DeleteTimer(unsigned int timerId, bool bForceDelete)
 {
   bool res = true;
   for (unsigned int i = 0; i < timers.size(); i++)
@@ -793,12 +793,12 @@ bool PVRFilmonAPI::filmonAPIdeleteTimer(unsigned int timerId, bool bForceDelete)
     kodi::Log(ADDON_LOG_DEBUG, "looking for timer %u", timerId);
     if (timers[i].iClientIndex == timerId)
     {
-      time_t t = time(0);
+      time_t t = time(nullptr);
       if ((t >= timers[i].startTime && t <= timers[i].endTime && bForceDelete) ||
           t < timers[i].startTime || t > timers[i].endTime)
       {
         std::string params = "record_id=" + std::to_string(timerId);
-        res = filmonRequest("tv/api/dvr/remove", sessionKeyParam + "&" + params);
+        res = DoRequest("tv/api/dvr/remove", sessionKeyParam + "&" + params);
         if (res)
         {
           Json::Value root;
@@ -816,7 +816,7 @@ bool PVRFilmonAPI::filmonAPIdeleteTimer(unsigned int timerId, bool bForceDelete)
           {
             res = false;
           }
-          clearResponse();
+          ClearResponse();
         }
       }
       break;
@@ -827,23 +827,23 @@ bool PVRFilmonAPI::filmonAPIdeleteTimer(unsigned int timerId, bool bForceDelete)
 }
 
 // Recording usage in bytes
-void PVRFilmonAPI::filmonAPIgetUserStorage(uint64_t& iTotal, uint64_t& iUsed)
+void PVRFilmonAPI::GetUserStorage(uint64_t& iTotal, uint64_t& iUsed)
 {
   iTotal = storageTotal;
   iUsed = storageUsed;
 }
 
 // int main(int argc, char *argv[]) {
-//  filmonAPICreate();
+//  Create();
 //  std::string username = argv[1];
 //  std::string password = argv[2];
-//  filmonAPIlogin(username, password);
-//  std::vector<FILMON_CHANNEL_GROUP> grps = filmonAPIgetChannelGroups();
+//  Login(username, password);
+//  std::vector<FILMON_CHANNEL_GROUP> grps = GetChannelGroups();
 //  for (int i = 0; i < grps.size(); i++) {
 //    std::cout << grps[i].strGroupName << std::endl;
 //    for (int j = 0; j < grps[i].members.size();j++) {
 //      std::cout << grps[i].members[j] << std::endl;
 //    }
 //  }
-//  filmonAPIDelete();
+//  Delete();
 //}
