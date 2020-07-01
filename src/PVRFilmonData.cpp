@@ -238,7 +238,7 @@ PVR_ERROR PVRFilmonData::GetChannels(bool radio, kodi::addon::PVRChannelsResultS
       xbmcChannel.SetIsHidden(false);
       if (expired)
       {
-        m_channels.push_back(channel);
+        m_channels.emplace_back(channel);
       }
       results.Add(xbmcChannel);
     }
