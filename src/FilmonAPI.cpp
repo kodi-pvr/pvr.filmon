@@ -348,40 +348,33 @@ bool PVRFilmonAPI::GetChannel(unsigned int channelId, FilmonChannel* channel, bo
     Json::Value streams = root["streams"];
     Json::Value tvguide = root["tvguide"];
     std::string streamURL;
+
     unsigned int streamCount = streams.size();
     unsigned int stream = 0;
+    std::string quality;
+    kodi::Log(ADDON_LOG_DEBUG, "---------- Channel: %s ----------", title.asString().c_str());
+    // Debug log all available qualities
+    for (int i = 0; i < streamCount; i++)
+    {
+      kodi::Log(ADDON_LOG_DEBUG, "Channel: %s, Stream: %d, Quality: %s", title.asString().c_str(), i, streams[i]["quality"].asString().c_str());
+    }
+    // Now select stream
     for (stream = 0; stream < streamCount; stream++)
     {
-      std::string quality = streams[stream]["quality"].asString();
-      if (preferHd == true)
+      quality = streams[stream]["quality"].asString();
+      if (quality == "high" || quality == "480p" || quality == "HD")
       {
-        kodi::Log(ADDON_LOG_DEBUG, "Prefer high quality stream");
-        if (quality.compare(std::string("high")) == 0 ||
-            quality.compare(std::string("480p")) == 0 || quality.compare(std::string("HD")) == 0)
-        {
-          kodi::Log(ADDON_LOG_DEBUG, "high quality stream found: %s", quality.c_str());
+        if (preferHd)
           break;
-        }
-        else
-        {
-          kodi::Log(ADDON_LOG_DEBUG, "low quality stream found: %s", quality.c_str());
-        }
       }
       else
       {
-        kodi::Log(ADDON_LOG_DEBUG, "Prefer low quality stream");
-        if (quality.compare(std::string("high")) == 0 ||
-            quality.compare(std::string("480p")) == 0 || quality.compare(std::string("HD")) == 0)
-        {
-          kodi::Log(ADDON_LOG_DEBUG, "high quality stream found: %s", quality.c_str());
-        }
-        else
-        {
-          kodi::Log(ADDON_LOG_DEBUG, "low quality stream found: %s", quality.c_str());
+        if (!preferHd)
           break;
-        }
       }
     }
+    kodi::Log(ADDON_LOG_DEBUG, "Selected stream: %d, quality: '%s'", stream, quality.c_str());
+
     std::string chTitle = title.asString();
     std::string iconPath = icon.asString();
     streamURL = streams[stream]["url"].asString();
