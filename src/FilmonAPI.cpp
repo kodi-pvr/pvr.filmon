@@ -69,7 +69,7 @@ std::string PVRFilmonAPI::TimeToHourMin(unsigned int t)
 }
 
 // Timer settings not supported in Filmon
-void PVRFilmonAPI::SetTimerDefaults(FILMON_TIMER* t)
+void PVRFilmonAPI::SetTimerDefaults(FilmonTimer* t)
 {
   t->bIsRepeating = false;
   t->firstDay = 0;
@@ -332,7 +332,7 @@ std::string PVRFilmonAPI::GetRtmpStream(std::string url, std::string name)
 }
 
 // Channel
-bool PVRFilmonAPI::GetChannel(unsigned int channelId, FILMON_CHANNEL* channel, bool preferHd)
+bool PVRFilmonAPI::GetChannel(unsigned int channelId, FilmonChannel* channel, bool preferHd)
 {
   bool res = DoRequest("tv/api/channel/" + std::to_string(channelId), sessionKeyParam);
   if (res == true)
@@ -438,7 +438,7 @@ bool PVRFilmonAPI::GetChannel(unsigned int channelId, FILMON_CHANNEL* channel, b
         Json::Value programmeName = root[p]["programme_name"];
         Json::Value plot = root[p]["programme_description"];
         Json::Value images = root[p]["images"];
-        FILMON_EPG_ENTRY epgEntry;
+        FilmonEpgEntry epgEntry;
         if (programmeId.compare(offAir) != 0)
         {
           epgEntry.strTitle = programmeName.asString();
@@ -489,7 +489,7 @@ bool PVRFilmonAPI::GetChannel(unsigned int channelId, FILMON_CHANNEL* channel, b
 }
 
 // Channel groups
-std::vector<FILMON_CHANNEL_GROUP> PVRFilmonAPI::GetChannelGroups()
+std::vector<FilmonChannelGroup> PVRFilmonAPI::GetChannelGroups()
 {
   bool res = DoRequest("tv/api/groups", sessionKeyParam);
   if (res == true)
@@ -504,7 +504,7 @@ std::vector<FILMON_CHANNEL_GROUP> PVRFilmonAPI::GetChannelGroups()
       Json::Value groupName = root[i]["group"];
       Json::Value groupId = root[i]["group_id"];
       Json::Value channels = root[i]["channels"];
-      FILMON_CHANNEL_GROUP group;
+      FilmonChannelGroup group;
       group.bRadio = false;
       group.iGroupId = std::atoi(groupId.asString().c_str());
       group.strGroupName = groupName.asString();
@@ -589,7 +589,7 @@ bool PVRFilmonAPI::GetRecordingsTimers(bool completed)
           recordings.clear();
           recordingsCleared = true;
         }
-        FILMON_RECORDING recording;
+        FilmonRecording recording;
         recording.strRecordingId = recTimId;
         recording.strTitle = recTimTitle;
         recording.strStreamURL = recordingsTimers[recordingId]["download_link"].asString();
@@ -610,31 +610,31 @@ bool PVRFilmonAPI::GetRecordingsTimers(bool completed)
           timersCleared = true;
         }
 
-        FILMON_TIMER timer;
+        FilmonTimer timer;
         timer.iClientIndex = std::atoi(recTimId.c_str());
         timer.iClientChannelUid =
             std::atoi(recordingsTimers[recordingId]["channel_id"].asString().c_str());
         timer.startTime = recTimStart;
         timer.endTime = timer.startTime + recDuration;
         timer.strTitle = recTimTitle;
-        timer.state = FILMON_TIMER_STATE_NEW;
+        timer.state = FilmonTimerState::NEW;
         timer.strSummary = recordingsTimers[recordingId]["description"].asString();
         SetTimerDefaults(&timer);
         time_t t = time(nullptr);
         if (t >= timer.startTime && t <= timer.endTime)
         {
           kodi::Log(ADDON_LOG_DEBUG, "found active timer %s", timer.strTitle.c_str());
-          timer.state = FILMON_TIMER_STATE_RECORDING;
+          timer.state = FilmonTimerState::RECORDING;
         }
         else if (t < timer.startTime)
         {
           kodi::Log(ADDON_LOG_DEBUG, "found scheduled timer %s", timer.strTitle.c_str());
-          timer.state = FILMON_TIMER_STATE_SCHEDULED;
+          timer.state = FilmonTimerState::SCHEDULED;
         }
         else if (t > timer.endTime)
         {
           kodi::Log(ADDON_LOG_DEBUG, "found completed timer %s", timer.strTitle.c_str());
-          timer.state = FILMON_TIMER_STATE_COMPLETED;
+          timer.state = FilmonTimerState::COMPLETED;
         }
         timers.push_back(timer);
       }
@@ -645,7 +645,7 @@ bool PVRFilmonAPI::GetRecordingsTimers(bool completed)
 }
 
 // Wrapper to get recordings
-std::vector<FILMON_RECORDING> PVRFilmonAPI::GetRecordings(void)
+std::vector<FilmonRecording> PVRFilmonAPI::GetRecordings(void)
 {
   bool completed = true;
   if (GetRecordingsTimers(completed) != true)
@@ -694,7 +694,7 @@ bool PVRFilmonAPI::DeleteRecording(unsigned int recordingId)
 }
 
 // Get timers
-std::vector<FILMON_TIMER> PVRFilmonAPI::GetTimers(void)
+std::vector<FilmonTimer> PVRFilmonAPI::GetTimers(void)
 {
   if (GetRecordingsTimers() != true)
   {
@@ -751,7 +751,7 @@ bool PVRFilmonAPI::AddTimer(int channelId, time_t startTime, time_t endTime)
                         &jsonReaderError);
           if (root["success"].asBool())
           {
-            FILMON_TIMER timer;
+            FilmonTimer timer;
             timer.iClientIndex = std::atoi(programmeId.c_str());
             timer.iClientChannelUid = channelId;
             timer.startTime = epgStartTime;
@@ -761,11 +761,11 @@ bool PVRFilmonAPI::AddTimer(int channelId, time_t startTime, time_t endTime)
             time_t t = time(nullptr);
             if (t >= epgStartTime && t <= epgEndTime)
             {
-              timer.state = FILMON_TIMER_STATE_RECORDING;
+              timer.state = FilmonTimerState::RECORDING;
             }
             else
             {
-              timer.state = FILMON_TIMER_STATE_SCHEDULED;
+              timer.state = FilmonTimerState::SCHEDULED;
             }
             SetTimerDefaults(&timer);
             timers.push_back(timer);
@@ -838,7 +838,7 @@ void PVRFilmonAPI::GetUserStorage(uint64_t& iTotal, uint64_t& iUsed)
 //  std::string username = argv[1];
 //  std::string password = argv[2];
 //  Login(username, password);
-//  std::vector<FILMON_CHANNEL_GROUP> grps = GetChannelGroups();
+//  std::vector<FilmonChannelGroup> grps = GetChannelGroups();
 //  for (int i = 0; i < grps.size(); i++) {
 //    std::cout << grps[i].strGroupName << std::endl;
 //    for (int j = 0; j < grps[i].members.size();j++) {

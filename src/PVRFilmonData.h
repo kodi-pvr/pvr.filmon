@@ -17,11 +17,11 @@
 
 #define FILMON_CACHE_TIME 10800 // 3 hours
 
-typedef FILMON_EPG_ENTRY PVRFilmonEpgEntry;
-typedef FILMON_CHANNEL PVRFilmonChannel;
-typedef FILMON_RECORDING PVRFilmonRecording;
-typedef FILMON_TIMER PVRFilmonTimer;
-typedef FILMON_CHANNEL_GROUP PVRFilmonChannelGroup;
+typedef FilmonEpgEntry PVRFilmonEpgEntry;
+typedef FilmonChannel PVRFilmonChannel;
+typedef FilmonRecording PVRFilmonRecording;
+typedef FilmonTimer PVRFilmonTimer;
+typedef FilmonChannelGroup PVRFilmonChannelGroup;
 
 class ATTRIBUTE_HIDDEN PVRFilmonData : public kodi::addon::CAddonBase,
                                        public kodi::addon::CInstancePVRClient

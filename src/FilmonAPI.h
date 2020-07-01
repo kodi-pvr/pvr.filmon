@@ -14,15 +14,15 @@
 
 #define REQUEST_RETRIES 4
 
-typedef enum
+enum class FilmonTimerState
 {
-  FILMON_TIMER_STATE_NEW = 0,
-  FILMON_TIMER_STATE_SCHEDULED = 1,
-  FILMON_TIMER_STATE_RECORDING = 2,
-  FILMON_TIMER_STATE_COMPLETED = 3,
-} FILMON_TIMER_STATE;
+  NEW = 0,
+  SCHEDULED = 1,
+  RECORDING = 2,
+  COMPLETED = 3,
+};
 
-typedef struct
+struct FilmonRecording
 {
   int iDuration;
   int iGenreType;
@@ -36,15 +36,15 @@ typedef struct
   std::string strIconPath;
   std::string strThumbnailPath;
   time_t recordingTime;
-} FILMON_RECORDING;
+};
 
-typedef struct
+struct FilmonTimer
 {
   unsigned int iClientIndex;
   int iClientChannelUid;
   time_t startTime;
   time_t endTime;
-  FILMON_TIMER_STATE state;
+  FilmonTimerState state;
   std::string strTitle;
   std::string strSummary;
   bool bIsRepeating;
@@ -55,17 +55,17 @@ typedef struct
   int iGenreSubType;
   int iMarginStart;
   int iMarginEnd;
-} FILMON_TIMER;
+};
 
-typedef struct
+struct FilmonChannelGroup
 {
   bool bRadio;
   int iGroupId;
   std::string strGroupName;
   std::vector<unsigned int> members;
-} FILMON_CHANNEL_GROUP;
+};
 
-typedef struct
+struct FilmonEpgEntry
 {
   unsigned int iBroadcastId;
   std::string strTitle;
@@ -84,9 +84,9 @@ typedef struct
   int iEpisodeNumber;
   int iEpisodePartNumber;
   std::string strEpisodeName;
-} FILMON_EPG_ENTRY;
+};
 
-typedef struct
+struct FilmonChannel
 {
   bool bRadio;
   unsigned int iUniqueId;
@@ -95,8 +95,8 @@ typedef struct
   std::string strChannelName;
   std::string strIconPath;
   std::string strStreamURL;
-  std::vector<FILMON_EPG_ENTRY> epg;
-} FILMON_CHANNEL;
+  std::vector<FilmonEpgEntry> epg;
+};
 
 class PVRFilmonAPI
 {
@@ -111,12 +111,12 @@ public:
   bool DeleteTimer(unsigned int timerId, bool bForceDelete);
   bool AddTimer(int channelId, time_t startTime, time_t endTime);
   bool DeleteRecording(unsigned int recordingId);
-  bool GetChannel(unsigned int channelId, FILMON_CHANNEL* channel, bool preferHd);
+  bool GetChannel(unsigned int channelId, FilmonChannel* channel, bool preferHd);
   std::vector<unsigned int> GetChannels();
   unsigned int GetChannelCount();
-  std::vector<FILMON_CHANNEL_GROUP> GetChannelGroups();
-  std::vector<FILMON_RECORDING> GetRecordings();
-  std::vector<FILMON_TIMER> GetTimers();
+  std::vector<FilmonChannelGroup> GetChannelGroups();
+  std::vector<FilmonRecording> GetRecordings();
+  std::vector<FilmonTimer> GetTimers();
   std::string GetConnectionString();
 
 private:
@@ -129,7 +129,7 @@ private:
   bool GetRecordingsTimers(bool completed = false);
   void ClearResponse();
   std::string TimeToHourMin(unsigned int t);
-  void SetTimerDefaults(FILMON_TIMER* t);
+  void SetTimerDefaults(FilmonTimer* t);
 
   std::string filmonUsername = "";
   std::string filmonpassword = "";
@@ -140,9 +140,9 @@ private:
   long long storageTotal = 0;
 
   std::vector<unsigned int> channelList;
-  std::vector<FILMON_CHANNEL_GROUP> groups;
-  std::vector<FILMON_RECORDING> recordings;
-  std::vector<FILMON_TIMER> timers;
+  std::vector<FilmonChannelGroup> groups;
+  std::vector<FilmonRecording> recordings;
+  std::vector<FilmonTimer> timers;
 
   bool connected = false;
 

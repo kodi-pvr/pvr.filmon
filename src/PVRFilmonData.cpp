@@ -192,7 +192,7 @@ PVR_ERROR PVRFilmonData::GetChannels(bool radio, kodi::addon::PVRChannelsResultS
 
   for (unsigned int i = 0; i < channelCount; i++)
   {
-    FILMON_CHANNEL channel;
+    FilmonChannel channel;
     channelId = channelList[i];
     if (expired)
     {
