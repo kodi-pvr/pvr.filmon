@@ -131,23 +131,23 @@ private:
   std::string TimeToHourMin(unsigned int t);
   void SetTimerDefaults(FilmonTimer* t);
 
-  std::string filmonUsername = "";
-  std::string filmonpassword = "";
+  std::string m_filmonUsername = "";
+  std::string m_filmonPassword = "";
   bool m_favouriteChannelsOnly = false;
-  std::string sessionKeyParam = "";
-  std::string swfPlayer = "";
+  std::string m_sessionKeyParam = "";
+  std::string m_swfPlayer = "";
 
-  long long storageUsed = 0;
-  long long storageTotal = 0;
+  long long m_storageUsed = 0;
+  long long m_storageTotal = 0;
 
-  std::vector<unsigned int> channelList;
-  std::vector<FilmonChannelGroup> groups;
-  std::vector<FilmonRecording> recordings;
-  std::vector<FilmonTimer> timers;
+  std::vector<unsigned int> m_channelList;
+  std::vector<FilmonChannelGroup> m_groups;
+  std::vector<FilmonRecording> m_recordings;
+  std::vector<FilmonTimer> m_timers;
 
-  bool connected = false;
+  bool m_connected = false;
 
-  std::string response;
+  std::string m_response;
 
   kodi::addon::CInstancePVRClient& m_client;
 };
