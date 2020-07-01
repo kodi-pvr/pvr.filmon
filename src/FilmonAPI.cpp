@@ -28,7 +28,6 @@
 #define FILMON_URL "http://www.filmon.com/"
 #define FILMON_ONE_HOUR_RECORDING_SIZE 508831234
 #define REQUEST_RETRY_TIMEOUT 500000 // 0.5s
-#define RESPONSE_OUTPUT_LENGTH 128
 
 #define RECORDED_STATUS "Recorded"
 #define TIMER_STATUS "Accepted"
@@ -145,7 +144,7 @@ bool PVRFilmonAPI::DoRequest(std::string path, std::string params, unsigned int 
       while (int read = fileHandle.Read(buffer, 4096))
         response.append(buffer, read);
 
-      kodi::Log(ADDON_LOG_DEBUG, "response is %s", response.substr(0, RESPONSE_OUTPUT_LENGTH).c_str());
+      kodi::Log(ADDON_LOG_DEBUG, "response is: %s", response.c_str());
     }
   } while (response.empty() && --retries > 0);
 
@@ -179,7 +178,7 @@ bool PVRFilmonAPI::KeepAlive(void)
   {
     // Login again if it failed
     Logout();
-    Login(filmonUsername, filmonpassword);
+    Login(filmonUsername, filmonpassword, m_favouriteChannelsOnly);
   }
   else
   {
@@ -214,7 +213,7 @@ bool PVRFilmonAPI::GetSessionKey(void)
 }
 
 // Login subscriber
-bool PVRFilmonAPI::Login(std::string username, std::string password)
+bool PVRFilmonAPI::Login(std::string username, std::string password, bool favouriteChannelsOnly)
 {
 
   bool res = GetSessionKey();
@@ -223,6 +222,7 @@ bool PVRFilmonAPI::Login(std::string username, std::string password)
     kodi::Log(ADDON_LOG_DEBUG, "logging in user");
     filmonUsername = username;
     filmonpassword = password;
+    m_favouriteChannelsOnly = favouriteChannelsOnly;
 
     std::string md5pwd = PVRXBMC::XBMC_MD5::GetMD5(password);
     std::transform(md5pwd.begin(), md5pwd.end(), md5pwd.begin(), ::tolower);
@@ -236,16 +236,46 @@ bool PVRFilmonAPI::Login(std::string username, std::string password)
       Json::CharReaderBuilder jsonReaderBuilder;
       std::unique_ptr<Json::CharReader> const reader(jsonReaderBuilder.newCharReader());
       reader->parse(response.c_str(), response.c_str() + response.size(), &root, &jsonReaderError);
-      // Favorite channels
+
       channelList.clear();
-      Json::Value favouriteChannels = root["favorite-channels"];
-      unsigned int channelCount = favouriteChannels.size();
-      for (unsigned int channel = 0; channel < channelCount; channel++)
+
+      if (m_favouriteChannelsOnly)
       {
-        Json::Value chId = favouriteChannels[channel]["channel"]["id"];
-        channelList.push_back(chId.asUInt());
-        kodi::Log(ADDON_LOG_INFO, "added channel %u", chId.asUInt());
+        Json::Value favouriteChannels = root["favorite-channels"];
+        unsigned int channelCount = favouriteChannels.size();
+        for (unsigned int channel = 0; channel < channelCount; channel++)
+        {
+          Json::Value chId = favouriteChannels[channel]["channel"]["id"];
+          channelList.push_back(chId.asUInt());
+          kodi::Log(ADDON_LOG_INFO, "Adding favourite channel to list, id: %u", chId.asUInt());
+        }
       }
+      else // We want all the channels to be valid
+      {
+        // Need to clear the long response before we call the channle list API
+        ClearResponse();
+
+        res = DoRequest("tv/api/channels", sessionKeyParam);
+        if (res)
+        {
+          Json::Value root;
+          std::string jsonReaderError;
+          Json::CharReaderBuilder jsonReaderBuilder;
+          std::unique_ptr<Json::CharReader> const reader(jsonReaderBuilder.newCharReader());
+          reader->parse(response.c_str(), response.c_str() + response.size(), &root, &jsonReaderError);
+          for (unsigned int i = 0; i < root.size(); i++)
+          {
+            Json::Value channelId = root[i]["id"];
+            Json::Value channelTitle = root[i]["title"];
+            Json::Value channelGroup = root[i]["group"];
+
+            unsigned int id = std::atoi(channelId.asString().c_str());
+            channelList.emplace_back(id);
+            kodi::Log(ADDON_LOG_DEBUG, "Adding channel to all channel list: id: %u, name: %s: group: %s", id, channelTitle.asString().c_str(), channelGroup.asString().c_str());
+          }
+        }
+      }
+
       ClearResponse();
     }
   }

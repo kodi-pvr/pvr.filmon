@@ -52,6 +52,7 @@ void PVRFilmonData::ReadSettings()
   m_username = kodi::GetSettingString("username");
   m_password = kodi::GetSettingString("password");
   m_preferHd = kodi::GetSettingBoolean("preferhd");
+  m_favouriteChannelsOnly = kodi::GetSettingBoolean("favouritechannelsonly");
 }
 
 ADDON_STATUS PVRFilmonData::SetSetting(const std::string& settingName,
@@ -87,6 +88,16 @@ ADDON_STATUS PVRFilmonData::SetSetting(const std::string& settingName,
       return ADDON_STATUS_NEED_RESTART;
     }
   }
+  else if (settingName == "favouritechannelsonly")
+  {
+    bool tmp_boolFavouriteChannelsOnly = m_favouriteChannelsOnly;
+    m_favouriteChannelsOnly = settingValue.GetBoolean();
+    if (tmp_boolFavouriteChannelsOnly != m_favouriteChannelsOnly)
+    {
+      kodi::Log(ADDON_LOG_INFO, "%s - Changed Setting 'favouritechannelsonly'", __FUNCTION__);
+      return ADDON_STATUS_NEED_RESTART;
+    }
+  }
   return ADDON_STATUS_OK;
 }
 
@@ -96,7 +107,7 @@ bool PVRFilmonData::Load()
   bool res = m_filmonApi.Create();
   if (res)
   {
-    res = m_filmonApi.Login(m_username, m_password);
+    res = m_filmonApi.Login(m_username, m_password, m_favouriteChannelsOnly);
     if (res)
     {
       kodi::addon::CInstancePVRClient::ConnectionStateChange("", PVR_CONNECTION_STATE_CONNECTED, "");
@@ -407,7 +418,7 @@ PVR_ERROR PVRFilmonData::GetEPGForChannel(int channelUid, time_t start, time_t e
     if (std::time(nullptr) - m_lastTimeChannels > FILMON_CACHE_TIME)
     {
       // Get PVR to re-read refreshed channels
-      if (m_filmonApi.Login(m_username, m_password))
+      if (m_filmonApi.Login(m_username, m_password, m_favouriteChannelsOnly))
       {
         kodi::addon::CInstancePVRClient::TriggerChannelGroupsUpdate();
         kodi::addon::CInstancePVRClient::TriggerChannelUpdate();

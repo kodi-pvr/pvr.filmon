@@ -106,7 +106,7 @@ public:
   bool Create();
   void Delete();
   bool KeepAlive();
-  bool Login(std::string username, std::string password);
+  bool Login(std::string username, std::string password, bool favouriteChannelsOnly);
   void GetUserStorage(uint64_t& iTotal, uint64_t& iUsed);
   bool DeleteTimer(unsigned int timerId, bool bForceDelete);
   bool AddTimer(int channelId, time_t startTime, time_t endTime);
@@ -133,6 +133,7 @@ private:
 
   std::string filmonUsername = "";
   std::string filmonpassword = "";
+  bool m_favouriteChannelsOnly = false;
   std::string sessionKeyParam = "";
   std::string swfPlayer = "";
 

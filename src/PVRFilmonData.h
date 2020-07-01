@@ -86,4 +86,5 @@ private:
   std::string m_username;
   std::string m_password;
   bool m_preferHd = false;
+  bool m_favouriteChannelsOnly = false;
 };
