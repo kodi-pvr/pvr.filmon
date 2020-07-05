@@ -14,15 +14,15 @@
 
 #define REQUEST_RETRIES 4
 
-typedef enum
+enum class FilmonTimerState
 {
-  FILMON_TIMER_STATE_NEW = 0,
-  FILMON_TIMER_STATE_SCHEDULED = 1,
-  FILMON_TIMER_STATE_RECORDING = 2,
-  FILMON_TIMER_STATE_COMPLETED = 3,
-} FILMON_TIMER_STATE;
+  NEW = 0,
+  SCHEDULED = 1,
+  RECORDING = 2,
+  COMPLETED = 3,
+};
 
-typedef struct
+struct FilmonRecording
 {
   int iDuration;
   int iGenreType;
@@ -36,15 +36,15 @@ typedef struct
   std::string strIconPath;
   std::string strThumbnailPath;
   time_t recordingTime;
-} FILMON_RECORDING;
+};
 
-typedef struct
+struct FilmonTimer
 {
   unsigned int iClientIndex;
   int iClientChannelUid;
   time_t startTime;
   time_t endTime;
-  FILMON_TIMER_STATE state;
+  FilmonTimerState state;
   std::string strTitle;
   std::string strSummary;
   bool bIsRepeating;
@@ -55,17 +55,17 @@ typedef struct
   int iGenreSubType;
   int iMarginStart;
   int iMarginEnd;
-} FILMON_TIMER;
+};
 
-typedef struct
+struct FilmonChannelGroup
 {
   bool bRadio;
   int iGroupId;
   std::string strGroupName;
   std::vector<unsigned int> members;
-} FILMON_CHANNEL_GROUP;
+};
 
-typedef struct
+struct FilmonEpgEntry
 {
   unsigned int iBroadcastId;
   std::string strTitle;
@@ -84,9 +84,9 @@ typedef struct
   int iEpisodeNumber;
   int iEpisodePartNumber;
   std::string strEpisodeName;
-} FILMON_EPG_ENTRY;
+};
 
-typedef struct
+struct FilmonChannel
 {
   bool bRadio;
   unsigned int iUniqueId;
@@ -95,58 +95,59 @@ typedef struct
   std::string strChannelName;
   std::string strIconPath;
   std::string strStreamURL;
-  std::vector<FILMON_EPG_ENTRY> epg;
-} FILMON_CHANNEL;
+  std::vector<FilmonEpgEntry> epg;
+};
 
 class PVRFilmonAPI
 {
 public:
   PVRFilmonAPI(kodi::addon::CInstancePVRClient& client) : m_client(client) { }
 
-  bool filmonAPICreate(void);
-  void filmonAPIDelete(void);
-  bool filmonAPIkeepAlive(void);
-  bool filmonAPIlogin(std::string username, std::string password);
-  void filmonAPIgetUserStorage(uint64_t& iTotal, uint64_t& iUsed);
-  bool filmonAPIdeleteTimer(unsigned int timerId, bool bForceDelete);
-  bool filmonAPIaddTimer(int channelId, time_t startTime, time_t endTime);
-  bool filmonAPIdeleteRecording(unsigned int recordingId);
-  bool filmonAPIgetChannel(unsigned int channelId, FILMON_CHANNEL* channel, bool preferHd);
-  std::vector<unsigned int> filmonAPIgetChannels(void);
-  unsigned int filmonAPIgetChannelCount(void);
-  std::vector<FILMON_CHANNEL_GROUP> filmonAPIgetChannelGroups();
-  std::vector<FILMON_RECORDING> filmonAPIgetRecordings(void);
-  std::vector<FILMON_TIMER> filmonAPIgetTimers(void);
-  std::string filmonAPIConnection();
+  bool Create();
+  void Delete();
+  bool KeepAlive();
+  bool Login(std::string username, std::string password, bool favouriteChannelsOnly);
+  void GetUserStorage(uint64_t& iTotal, uint64_t& iUsed);
+  bool DeleteTimer(unsigned int timerId, bool bForceDelete);
+  bool AddTimer(int channelId, time_t startTime, time_t endTime);
+  bool DeleteRecording(unsigned int recordingId);
+  bool GetChannel(unsigned int channelId, FilmonChannel* channel, bool preferHd);
+  std::vector<unsigned int> GetChannels();
+  unsigned int GetChannelCount();
+  std::vector<FilmonChannelGroup> GetChannelGroups();
+  std::vector<FilmonRecording> GetRecordings();
+  std::vector<FilmonTimer> GetTimers();
+  std::string GetConnectionString();
 
 private:
-  bool filmonRequest(std::string path, std::string params = "", unsigned int retries = REQUEST_RETRIES);
-  void filmonAPIlogout(void);
-  bool filmonAPIgetSessionKey(void);
-  void filmonAPIgetswfPlayer();
-  int filmonAPIgetGenre(std::string group);
-  std::string filmonAPIgetRtmpStream(std::string url, std::string name);
-  bool filmonAPIgetRecordingsTimers(bool completed = false);
-  void clearResponse();
-  std::string timeToHourMin(unsigned int t);
-  void setTimerDefaults(FILMON_TIMER* t);
+  bool DoRequest(std::string path, std::string params = "", unsigned int retries = REQUEST_RETRIES);
+  void Logout();
+  bool GetSessionKey();
+  void GetSwfPlayer();
+  int GetGenre(std::string group);
+  std::string GetRtmpStream(std::string url, std::string name);
+  bool GetRecordingsTimers(bool completed = false);
+  void ClearResponse();
+  std::string TimeToHourMin(unsigned int t);
+  void SetTimerDefaults(FilmonTimer* t);
 
-  std::string filmonUsername = "";
-  std::string filmonpassword = "";
-  std::string sessionKeyParam = "";
-  std::string swfPlayer = "";
+  std::string m_filmonUsername = "";
+  std::string m_filmonPassword = "";
+  bool m_favouriteChannelsOnly = false;
+  std::string m_sessionKeyParam = "";
+  std::string m_swfPlayer = "";
 
-  long long storageUsed = 0;
-  long long storageTotal = 0;
+  long long m_storageUsed = 0;
+  long long m_storageTotal = 0;
 
-  std::vector<unsigned int> channelList;
-  std::vector<FILMON_CHANNEL_GROUP> groups;
-  std::vector<FILMON_RECORDING> recordings;
-  std::vector<FILMON_TIMER> timers;
+  std::vector<unsigned int> m_channelList;
+  std::vector<FilmonChannelGroup> m_groups;
+  std::vector<FilmonRecording> m_recordings;
+  std::vector<FilmonTimer> m_timers;
 
-  bool connected = false;
+  bool m_connected = false;
 
-  std::string response;
+  std::string m_response;
 
   kodi::addon::CInstancePVRClient& m_client;
 };

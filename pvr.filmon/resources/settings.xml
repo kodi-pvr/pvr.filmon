@@ -21,9 +21,14 @@
             <hidden>true</hidden>
           </control>
         </setting>
-        <setting id="loopforever" type="boolean" label="30002">
+        <setting id="preferhd" type="boolean" label="30002">
           <level>0</level>
-          <default>false</default>
+          <default>true</default>
+          <control type="toggle"/>
+        </setting>
+        <setting id="favouritechannelsonly" type="boolean" label="30003">
+          <level>0</level>
+          <default>true</default>
           <control type="toggle"/>
         </setting>
       </group>

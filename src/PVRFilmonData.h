@@ -17,11 +17,11 @@
 
 #define FILMON_CACHE_TIME 10800 // 3 hours
 
-typedef FILMON_EPG_ENTRY PVRFilmonEpgEntry;
-typedef FILMON_CHANNEL PVRFilmonChannel;
-typedef FILMON_RECORDING PVRFilmonRecording;
-typedef FILMON_TIMER PVRFilmonTimer;
-typedef FILMON_CHANNEL_GROUP PVRFilmonChannelGroup;
+typedef FilmonEpgEntry PVRFilmonEpgEntry;
+typedef FilmonChannel PVRFilmonChannel;
+typedef FilmonRecording PVRFilmonRecording;
+typedef FilmonTimer PVRFilmonTimer;
+typedef FilmonChannelGroup PVRFilmonChannelGroup;
 
 class ATTRIBUTE_HIDDEN PVRFilmonData : public kodi::addon::CAddonBase,
                                        public kodi::addon::CInstancePVRClient
@@ -82,8 +82,9 @@ private:
   time_t m_lastTimeChannels;
   bool m_onLoad = true;
 
-  PVRFilmonAPI m_api;
+  PVRFilmonAPI m_filmonApi;
   std::string m_username;
   std::string m_password;
   bool m_preferHd = false;
+  bool m_favouriteChannelsOnly = false;
 };
