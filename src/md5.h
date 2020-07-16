@@ -8,6 +8,7 @@
 #ifndef _MD5_H_
 #define _MD5_H_
 
+#include <kodi/AddonBase.h>
 #include <stdint.h>
 #include <string>
 
@@ -20,7 +21,7 @@ struct MD5Context
 
 namespace PVRXBMC
 {
-class XBMC_MD5
+class ATTRIBUTE_HIDDEN XBMC_MD5
 {
 public:
   XBMC_MD5(void);

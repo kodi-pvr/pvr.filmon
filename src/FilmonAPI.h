@@ -98,7 +98,7 @@ struct FilmonChannel
   std::vector<FilmonEpgEntry> epg;
 };
 
-class PVRFilmonAPI
+class ATTRIBUTE_HIDDEN PVRFilmonAPI
 {
 public:
   PVRFilmonAPI(kodi::addon::CInstancePVRClient& client) : m_client(client) { }
