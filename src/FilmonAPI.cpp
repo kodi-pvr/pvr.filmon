@@ -10,8 +10,6 @@
 
 #include "FilmonAPI.h"
 
-#include "md5.h"
-
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
@@ -22,6 +20,7 @@
 #include <vector>
 
 #include <kodi/Filesystem.h>
+#include <kodi/General.h>
 #include <kodi/addon-instance/PVR.h>
 #include <json/json.h>
 
@@ -223,7 +222,7 @@ bool PVRFilmonAPI::Login(std::string username, std::string password, bool favour
     m_filmonPassword = password;
     m_favouriteChannelsOnly = favouriteChannelsOnly;
 
-    std::string md5pwd = PVRXBMC::XBMC_MD5::GetMD5(password);
+    std::string md5pwd = kodi::GetMD5(password);
     std::transform(md5pwd.begin(), md5pwd.end(), md5pwd.begin(), ::tolower);
 
     std::string params = "login=" + username + "&password=" + md5pwd;

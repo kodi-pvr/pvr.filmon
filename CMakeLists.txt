@@ -12,11 +12,9 @@ include_directories(${JSONCPP_INCLUDE_DIRS}
 set(DEPLIBS ${JSONCPP_LIBRARIES})
 
 set(FILMON_SOURCES src/FilmonAPI.cpp
-                   src/PVRFilmonData.cpp
-                   src/md5.cpp)
+                   src/PVRFilmonData.cpp)
 
 set(FILMON_HEADERS src/FilmonAPI.h
-                   src/md5.h
                    src/PVRFilmonData.h)
 
 if(WIN32)
