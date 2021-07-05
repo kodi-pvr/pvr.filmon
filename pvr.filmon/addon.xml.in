@@ -123,9 +123,5 @@
     <assets>
       <icon>icon.png</icon>
     </assets>
-    <news>
-v6.1.1
-- Language update from Weblate
-    </news>
   </extension>
 </addon>
