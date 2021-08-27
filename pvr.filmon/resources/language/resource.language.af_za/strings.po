@@ -16,6 +16,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+msgctxt "Addon Summary"
+msgid "Filmon PVR Client"
+msgstr "Filmon PVR Kliënt"
+
+msgctxt "Addon Description"
+msgid "Filmon frontend. Supports live TV, recordings, EPG. Requires a Filmon subscription. Before enabling: (a) in Filmon set channels as favourite to see them in Kodi (b) enter your username and password in this addon's settings. Note: recordings can take several minutes to appear after timer is completed."
+msgstr "Filmon voorkant. Ondersteun lewendige TV, opnames, EPG. Vereis 'n Filmon subskripsie. Voor in staat stel: (a) in Filmon stel die kanale as gunsteling om hulle in Kodi te sien. (b) Vul jou gebruikersnaam en wagwoord in hierdie byvoegsel se verstellings in. Nota: Opnames kan verskeie minute vat om te verskyn na die tydhouer klaar is."
+
 msgctxt "#30000"
 msgid "Username"
 msgstr "Gebruikersnaam"
