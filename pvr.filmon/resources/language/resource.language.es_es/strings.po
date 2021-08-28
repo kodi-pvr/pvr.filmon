@@ -17,6 +17,14 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 4.7.1\n"
 
+msgctxt "Addon Summary"
+msgid "Filmon PVR Client"
+msgstr "Cliente PVR Filmon"
+
+msgctxt "Addon Description"
+msgid "Filmon frontend. Supports live TV, recordings, EPG. Requires a Filmon subscription. Before enabling: (a) in Filmon set channels as favourite to see them in Kodi (b) enter your username and password in this addon's settings. Note: recordings can take several minutes to appear after timer is completed."
+msgstr "Frontend Filmon. Soporta TV en directo, grabaciones, EPG. Requiere suscripción a Filmon. Antes de activar: (a) En Filmon, configure los canales como favoritos para verlos en Kodi (b) Configure este add-on con su usuario y clave. Nota: Las grabaciones pueden tardar varios minutos en aparecer tras finalizarse."
+
 msgctxt "#30000"
 msgid "Username"
 msgstr "Usuario"
