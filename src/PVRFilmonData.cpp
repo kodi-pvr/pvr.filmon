@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2011-2020 Team Kodi (https://kodi.tv)
+ *  Copyright (C) 2011-2021 Team Kodi (https://kodi.tv)
  *  Copyright (C) 2011 Pulse-Eight (http://www.pulse-eight.com/)
  *  Copyright (C) 2014 Stephen Denham
  *
