@@ -129,6 +129,7 @@ PVR_ERROR PVRFilmonData::GetCapabilities(kodi::addon::PVRCapabilities& capabilit
   capabilities.SetSupportsTV(true);
   capabilities.SetSupportsEPG(true);
   capabilities.SetSupportsRecordings(true);
+  capabilities.SetSupportsRecordingsDelete(true);
   capabilities.SetSupportsRecordingsUndelete(false);
   capabilities.SetSupportsTimers(true);
   capabilities.SetSupportsChannelGroups(true);
