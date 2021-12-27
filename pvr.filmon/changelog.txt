@@ -1,3 +1,7 @@
+v19.0.1
+- Translations updates from Weblate
+	- da_dk, es_mx, lt_lt, mn_mn
+
 v19.0.0
 - Translations updates from Weblate
   - fr_ca, mt_mt, te_in
