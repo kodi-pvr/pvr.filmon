@@ -23,8 +23,8 @@ typedef FilmonRecording PVRFilmonRecording;
 typedef FilmonTimer PVRFilmonTimer;
 typedef FilmonChannelGroup PVRFilmonChannelGroup;
 
-class ATTRIBUTE_HIDDEN PVRFilmonData : public kodi::addon::CAddonBase,
-                                       public kodi::addon::CInstancePVRClient
+class ATTR_DLL_LOCAL PVRFilmonData : public kodi::addon::CAddonBase,
+                                     public kodi::addon::CInstancePVRClient
 {
 public:
   PVRFilmonData(void);
@@ -32,7 +32,7 @@ public:
 
   ADDON_STATUS Create() override;
   ADDON_STATUS SetSetting(const std::string& settingName,
-                          const kodi::CSettingValue& settingValue) override;
+                          const kodi::addon::CSettingValue& settingValue) override;
 
   PVR_ERROR GetCapabilities(kodi::addon::PVRCapabilities& capabilities) override;
   PVR_ERROR GetBackendName(std::string& name) override;

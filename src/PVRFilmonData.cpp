@@ -49,14 +49,14 @@ void PVRFilmonData::ReadSettings()
 {
   kodi::Log(ADDON_LOG_DEBUG, "%s - read PVR Filmon settings", __FUNCTION__);
 
-  m_username = kodi::GetSettingString("username");
-  m_password = kodi::GetSettingString("password");
-  m_preferHd = kodi::GetSettingBoolean("preferhd");
-  m_favouriteChannelsOnly = kodi::GetSettingBoolean("favouritechannelsonly");
+  m_username = kodi::addon::GetSettingString("username");
+  m_password = kodi::addon::GetSettingString("password");
+  m_preferHd = kodi::addon::GetSettingBoolean("preferhd");
+  m_favouriteChannelsOnly = kodi::addon::GetSettingBoolean("favouritechannelsonly");
 }
 
 ADDON_STATUS PVRFilmonData::SetSetting(const std::string& settingName,
-                                       const kodi::CSettingValue& settingValue)
+                                       const kodi::addon::CSettingValue& settingValue)
 {
   if (settingName == "username")
   {
