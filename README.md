@@ -24,3 +24,9 @@ Also make sure you follow this README from the branch in question.
 
 * [Kodi's PVR user support](https://forum.kodi.tv/forumdisplay.php?fid=167)
 * [Kodi's PVR development support](https://forum.kodi.tv/forumdisplay.php?fid=136)
+
+
+### Install on Kodi
+This plugin comes with Kodi and simply needs to be enabled.
+
+To enable it goto: My Addons -> PVR clients -> PVR Filmon Client -> Enable
