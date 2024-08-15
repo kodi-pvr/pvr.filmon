@@ -64,6 +64,7 @@ public:
   PVR_ERROR UpdateTimer(const kodi::addon::PVRTimer& timer) override;
 
   PVR_ERROR GetChannelStreamProperties(const kodi::addon::PVRChannel& channel,
+                                       PVR_SOURCE source,
                                        std::vector<kodi::addon::PVRStreamProperty>& properties) override;
   PVR_ERROR GetRecordingStreamProperties(const kodi::addon::PVRRecording& recording,
                                          std::vector<kodi::addon::PVRStreamProperty>& properties) override;
