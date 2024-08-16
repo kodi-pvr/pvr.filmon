@@ -272,6 +272,7 @@ PVR_ERROR PVRFilmonData::GetChannelGroupsAmount(int& amount)
 }
 
 PVR_ERROR PVRFilmonData::GetChannelStreamProperties(const kodi::addon::PVRChannel& channel,
+                                                    PVR_SOURCE source,
                                                     std::vector<kodi::addon::PVRStreamProperty>& properties)
 {
   std::string strUrl;
